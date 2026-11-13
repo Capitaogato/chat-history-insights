@@ -12,9 +12,58 @@
   body{margin:0;background:var(--paper);color:var(--ink);font:18px/1.55 Georgia,"Iowan Old Style","Times New Roman",serif}
   .wrap{max-width:760px;margin:0 auto;padding:28px 22px 80px}
   .top{display:flex;justify-content:space-between;align-items:center;gap:12px}
-  .brand{display:flex;align-items:center;gap:9px;text-decoration:none;color:var(--ink)}
-  .brand-name{font:600 21px/1 Georgia,"Iowan Old Style",serif;letter-spacing:-.02em}
-  .brand-slogan{display:block;font:12px/1.3 system-ui,sans-serif;color:var(--mute);margin-top:3px}
+  .brand{display:flex;align-items:center;gap:10px;text-decoration:none;color:#0F766E;transition:opacity .2s}
+  .brand:hover{opacity:.7}
+  .brand-name{font:600 20px/1.2 Newsreader,Georgia,serif;letter-spacing:-.02em;color:#1A1A1A}
+  .brand-slogan{display:block;font:11px/1.2 "DM Sans",system-ui,-apple-system,sans-serif;letter-spacing:.01em;color:#0F766E}
+  @keyframes spark-pulse {
+    0%   { fill: #0F766E; filter: none; transform: scale(1); }
+    5%   { fill: #A21CAF; filter: drop-shadow(0 0 4px rgba(162,28,175,0.5)); transform: scale(1.25); }
+    25%  { fill: #A21CAF; filter: drop-shadow(0 0 3px rgba(162,28,175,0.4)); transform: scale(1.15); }
+    30%  { fill: #7C3AED; filter: drop-shadow(0 0 2px rgba(124,58,237,0.3)); transform: scale(1.08); }
+    42%  { fill: #0F766E; filter: none; transform: scale(1); }
+    100% { fill: #0F766E; filter: none; transform: scale(1); }
+  }
+  .spark-pulse circle {
+    fill: #0F766E;
+    animation: spark-pulse 10s ease-in-out infinite;
+    transform-origin: center;
+    transform-box: fill-box;
+  }
+  .spark-pulse circle:nth-child(1)  { animation-delay: 0s; }
+  .spark-pulse circle:nth-child(7)  { animation-delay: 0.08s; }
+  .spark-pulse circle:nth-child(2)  { animation-delay: 0.10s; }
+  .spark-pulse circle:nth-child(14) { animation-delay: 0.08s; }
+  .spark-pulse circle:nth-child(25) { animation-delay: 0.09s; }
+  .spark-pulse circle:nth-child(10) { animation-delay: 0.10s; }
+  .spark-pulse circle:nth-child(16) { animation-delay: 0.18s; }
+  .spark-pulse circle:nth-child(20) { animation-delay: 0.18s; }
+  .spark-pulse circle:nth-child(21) { animation-delay: 0.19s; }
+  .spark-pulse circle:nth-child(3)  { animation-delay: 0.20s; }
+  .spark-pulse circle:nth-child(22) { animation-delay: 0.20s; }
+  .spark-pulse circle:nth-child(8)  { animation-delay: 0.26s; }
+  .spark-pulse circle:nth-child(15) { animation-delay: 0.26s; }
+  .spark-pulse circle:nth-child(11) { animation-delay: 0.28s; }
+  .spark-pulse circle:nth-child(17) { animation-delay: 0.28s; }
+  .spark-pulse circle:nth-child(26) { animation-delay: 0.28s; }
+  .spark-pulse circle:nth-child(4)  { animation-delay: 0.30s; }
+  .spark-pulse circle:nth-child(23) { animation-delay: 0.30s; }
+  .spark-pulse circle:nth-child(12) { animation-delay: 0.36s; }
+  .spark-pulse circle:nth-child(18) { animation-delay: 0.36s; }
+  .spark-pulse circle:nth-child(5)  { animation-delay: 0.38s; }
+  .spark-pulse circle:nth-child(24) { animation-delay: 0.38s; }
+  .spark-pulse circle:nth-child(9)  { animation-delay: 0.38s; }
+  .spark-pulse circle:nth-child(27) { animation-delay: 0.38s; }
+  .spark-pulse circle:nth-child(13) { animation-delay: 0.46s; }
+  .spark-pulse circle:nth-child(19) { animation-delay: 0.46s; }
+  .spark-pulse circle:nth-child(6)  { animation-delay: 0.48s; }
+  .spark-pulse circle:nth-child(28) { animation-delay: 0.48s; }
+  @media (prefers-reduced-motion: reduce) {
+    .spark-pulse circle {
+      animation: none;
+      fill: #0F766E;
+    }
+  }
   .lang{text-align:right;font:14px system-ui,sans-serif;white-space:nowrap}
   .lang button{background:none;border:1px solid var(--line);border-radius:99px;padding:4px 12px;cursor:pointer;font:inherit;color:var(--mute)}
   .lang button.on{background:var(--ink);color:var(--paper);border-color:var(--ink)}
@@ -46,6 +95,11 @@
   ul.sub{font:16px/1.6 system-ui,sans-serif;padding-left:20px;margin:6px 0}
   .files{font:14px/1.7 ui-monospace,Menlo,monospace;background:#fff;border:1px solid var(--line);border-radius:6px;padding:10px 14px;margin:8px 0}
   .files .y{background:#dff3df;font-weight:700} .files .n{color:#aaa;text-decoration:line-through}
+  .shots{margin:10px 0 0}
+  .shots figure{margin:0 0 26px}
+  .shots img{width:100%;height:auto;border:1px solid var(--line);border-radius:6px;box-shadow:0 6px 24px rgba(0,0,0,.07);background:#fff}
+  .shots figcaption{font:14px/1.5 system-ui,sans-serif;color:var(--mute);margin-top:8px}
+  .demo-note{display:inline-block;font:600 12px system-ui,sans-serif;background:#fff;border:1px solid var(--line);border-radius:99px;padding:3px 10px;color:var(--mute);margin-bottom:14px}
   footer{margin-top:50px;font:13px system-ui,sans-serif;color:var(--mute)}
   footer a{color:var(--mute)}
   [data-l]{display:none} html[lang=de] [data-l=de], html[lang=en] [data-l=en]{display:revert}
@@ -55,7 +109,7 @@
 <body>
 <div class="wrap">
   <div class="top">
-    <a class="brand" href="https://ai-spark.de" title="ai-spark.de"><svg width="48" height="48" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg" aria-hidden="true" style="color:#0F766E"><circle cx="50" cy="48" r="3.5" fill="currentColor" opacity="0.9"/><circle cx="44" cy="36" r="3.5" fill="currentColor" opacity="0.8"/><circle cx="40" cy="26" r="3"   fill="currentColor" opacity="0.6"/><circle cx="37" cy="17" r="2.5" fill="currentColor" opacity="0.4"/><circle cx="35" cy="10" r="2"   fill="currentColor" opacity="0.22"/><circle cx="34" cy="4"  r="1.5" fill="currentColor" opacity="0.1"/><circle cx="52" cy="37" r="3"   fill="currentColor" opacity="0.7"/><circle cx="54" cy="28" r="2.5" fill="currentColor" opacity="0.4"/><circle cx="55" cy="21" r="1.8" fill="currentColor" opacity="0.18"/><circle cx="58" cy="38" r="3"   fill="currentColor" opacity="0.7"/><circle cx="64" cy="28" r="3.5" fill="currentColor" opacity="0.6"/><circle cx="69" cy="20" r="2.8" fill="currentColor" opacity="0.35"/><circle cx="73" cy="13" r="2"   fill="currentColor" opacity="0.15"/><circle cx="58" cy="46" r="2.5" fill="currentColor" opacity="0.55"/><circle cx="66" cy="44" r="2"   fill="currentColor" opacity="0.25"/><circle cx="56" cy="56" r="3"   fill="currentColor" opacity="0.65"/><circle cx="62" cy="64" r="2.5" fill="currentColor" opacity="0.45"/><circle cx="66" cy="70" r="2"   fill="currentColor" opacity="0.25"/><circle cx="69" cy="76" r="1.5" fill="currentColor" opacity="0.1"/><circle cx="48" cy="57" r="2.5" fill="currentColor" opacity="0.55"/><circle cx="46" cy="64" r="2"   fill="currentColor" opacity="0.28"/><circle cx="42" cy="55" r="2.8" fill="currentColor" opacity="0.6"/><circle cx="34" cy="61" r="2.5" fill="currentColor" opacity="0.35"/><circle cx="28" cy="66" r="2"   fill="currentColor" opacity="0.15"/><circle cx="40" cy="46" r="3"   fill="currentColor" opacity="0.65"/><circle cx="30" cy="44" r="2.5" fill="currentColor" opacity="0.35"/><circle cx="22" cy="42" r="2"   fill="currentColor" opacity="0.18"/><circle cx="15" cy="41" r="1.5" fill="currentColor" opacity="0.08"/></svg><span><span class="brand-name">AI Spark</span><span class="brand-slogan" data-l="de">Der Funke, der zündet.</span><span class="brand-slogan" data-l="en">The spark that ignites.</span></span></a>
+    <a class="brand" href="https://ai-spark.de" title="ai-spark.de"><svg width="55" height="55" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg" class="spark-pulse" aria-label="AI Spark Logo" style="color:#0F766E"><circle cx="50" cy="48" r="3.5" fill="currentColor" opacity="0.9"/><circle cx="44" cy="36" r="3.5" fill="currentColor" opacity="0.8"/><circle cx="40" cy="26" r="3"   fill="currentColor" opacity="0.6"/><circle cx="37" cy="17" r="2.5" fill="currentColor" opacity="0.4"/><circle cx="35" cy="10" r="2"   fill="currentColor" opacity="0.22"/><circle cx="34" cy="4"  r="1.5" fill="currentColor" opacity="0.1"/><circle cx="52" cy="37" r="3"   fill="currentColor" opacity="0.7"/><circle cx="54" cy="28" r="2.5" fill="currentColor" opacity="0.4"/><circle cx="55" cy="21" r="1.8" fill="currentColor" opacity="0.18"/><circle cx="58" cy="38" r="3"   fill="currentColor" opacity="0.7"/><circle cx="64" cy="28" r="3.5" fill="currentColor" opacity="0.6"/><circle cx="69" cy="20" r="2.8" fill="currentColor" opacity="0.35"/><circle cx="73" cy="13" r="2"   fill="currentColor" opacity="0.15"/><circle cx="58" cy="46" r="2.5" fill="currentColor" opacity="0.55"/><circle cx="66" cy="44" r="2"   fill="currentColor" opacity="0.25"/><circle cx="56" cy="56" r="3"   fill="currentColor" opacity="0.65"/><circle cx="62" cy="64" r="2.5" fill="currentColor" opacity="0.45"/><circle cx="66" cy="70" r="2"   fill="currentColor" opacity="0.25"/><circle cx="69" cy="76" r="1.5" fill="currentColor" opacity="0.1"/><circle cx="48" cy="57" r="2.5" fill="currentColor" opacity="0.55"/><circle cx="46" cy="64" r="2"   fill="currentColor" opacity="0.28"/><circle cx="42" cy="55" r="2.8" fill="currentColor" opacity="0.6"/><circle cx="34" cy="61" r="2.5" fill="currentColor" opacity="0.35"/><circle cx="28" cy="66" r="2"   fill="currentColor" opacity="0.15"/><circle cx="40" cy="46" r="3"   fill="currentColor" opacity="0.65"/><circle cx="30" cy="44" r="2.5" fill="currentColor" opacity="0.35"/><circle cx="22" cy="42" r="2"   fill="currentColor" opacity="0.18"/><circle cx="15" cy="41" r="1.5" fill="currentColor" opacity="0.08"/></svg><span><span class="brand-name">AI Spark</span><span class="brand-slogan" data-l="de">Der Funke, der zündet.</span><span class="brand-slogan" data-l="en">The spark that ignites.</span></span></a>
     <div class="lang"><button id="b-de" class="on" onclick="setL('de')">Deutsch</button> <button id="b-en" onclick="setL('en')">English</button></div>
   </div>
 
@@ -106,6 +160,15 @@
       <li><h2>Warten und Bericht öffnen</h2>
         <p>ChatGPT wertet aus (15–25 Minuten) und gibt dir am Ende einen Link zu deinem Bericht. Klicke darauf und öffne die Datei mit Doppelklick – sie öffnet sich in deinem Browser.</p></li>
     </ol>
+    <div class="phase">Beispiel</div>
+    <div class="phase-t">So sieht dein Bericht aus</div>
+    <span class="demo-note">Ausschnitte aus einem Beispielbericht mit erfundenen Daten</span>
+    <div class="shots">
+      <figure><img src="img/example-profile-de.png" alt="Beispiel: Profil mit Stärken, blinden Flecken, nächstem Schritt und Balkendiagramm der Verhaltensweisen" loading="lazy"><figcaption><b>Dein Profil:</b> Stärken, blinde Flecken und ein konkreter nächster Schritt – dazu, wie oft du welche Verhaltensweise zeigst.</figcaption></figure>
+      <figure><img src="img/example-change-de.png" alt="Beispiel: Vergleich ein Jahr zuvor und heute" loading="lazy"><figcaption><b>Was sich verändert hat:</b> grau früher, blau heute. Kräftig gezeigt wird nur, was statistisch belegt ist.</figcaption></figure>
+      <figure><img src="img/example-usage-de.png" alt="Beispiel: Einsatzarten, Denkstufen und Themen über die Zeit" loading="lazy"><figcaption><b>Wofür du KI nutzt:</b> Einsatzarten, wie anspruchsvoll deine Anfragen sind, und deine Themen über die Zeit.</figcaption></figure>
+    </div>
+
     <div class="box"><h3>Und meine Daten?</h3>
       Deine Chats liegen bereits bei OpenAI – der Export ist nur eine Kopie davon. Du gibst also nichts Neues und keinem neuen Anbieter etwas preis. Lade den Export nur in dem Konto hoch, aus dem er stammt. Im Bericht stehen keine Chat-Texte. Dieses Projekt sammelt keine Daten.</div>
     <details><summary>Was steht im Bericht?</summary>
@@ -162,6 +225,15 @@
       <li><h2>Wait and open your report</h2>
         <p>ChatGPT analyses (15–25 minutes) and finally gives you a link to your report. Click it and double-click the file – it opens in your browser.</p></li>
     </ol>
+    <div class="phase">Example</div>
+    <div class="phase-t">What your report looks like</div>
+    <span class="demo-note">Excerpts from a sample report with made-up data</span>
+    <div class="shots">
+      <figure><img src="img/example-profile-en.png" alt="Example: profile with strengths, blind spots, next step and bar chart of behaviours" loading="lazy"><figcaption><b>Your profile:</b> strengths, blind spots and one concrete next step – plus how often you show each behaviour.</figcaption></figure>
+      <figure><img src="img/example-change-en.png" alt="Example: a year earlier compared with today" loading="lazy"><figcaption><b>What has changed:</b> grey earlier, blue today. Only statistically supported changes are shown in full colour.</figcaption></figure>
+      <figure><img src="img/example-usage-en.png" alt="Example: task types, cognitive levels and topics over time" loading="lazy"><figcaption><b>What you use AI for:</b> task types, how demanding your requests are, and your topics over time.</figcaption></figure>
+    </div>
+
     <div class="box"><h3>What about my data?</h3>
       Your chats are already stored at OpenAI – the export is just a copy. You're not sharing anything new or with any new provider. Upload the export only into the account it came from. The report contains no chat texts. This project collects no data.</div>
     <details><summary>What's in the report?</summary>

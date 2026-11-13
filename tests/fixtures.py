@@ -17,7 +17,7 @@ ADD = {"ziel": " Ich brauche das, um morgen im Meeting zu entscheiden.", "format
  "arbeitsweise": " Stell mir zuerst drei Rückfragen, bevor du loslegst.", "eigenansatz": " Mein eigener Entwurf: erst Kosten senken, dann Umsatz. Prüf das."}
 FOL = {"nachbessern": "Kürzer bitte und ändere die Überschrift.", "pruefen": "Woher stammt die Zahl? Nenn mir die Quelle."}
 
-def make(out, start=(2023, 1), end=(2026, 10), n=1200, files=10, seed=1, gaps=(), meta="normal", weak_titles=0.0, growth=True):
+def make(out, start=(2023, 1), end=(2026, 10), n=1200, files=10, seed=1, gaps=(), meta="normal", weak_titles=0.0, growth=True, scale=None):
     rnd = random.Random(seed); os.makedirs(out, exist_ok=True); truth = {}; convs = []
     t0, t1 = dt.datetime(*start, 1).timestamp(), dt.datetime(*end, 28).timestamp()
     while len(convs) < n:
@@ -27,13 +27,13 @@ def make(out, start=(2023, 1), end=(2026, 10), n=1200, files=10, seed=1, gaps=()
         top = rnd.choice(list(TOPICS)); sub = rnd.choice(TOPICS[top]); task = rnd.choice(TASKS)
         txt, bloom = TEMPL[task]; txt = txt.format(t=sub); beh = {k: 0 for k in list(ADD) + list(FOL)}
         for k in ADD:
-            p = 0.05 + 0.6 * w * w
+            p = (0.05 + 0.6 * w * w) * (scale or {}).get(k, 1)
             if k == "adressat" and task not in ("schreiben", "ideen", "umformen"): p = 0
             if rnd.random() < p: beh[k] = 1; txt += ADD[k]
         bloom = max(1, min(6, bloom + rnd.choice([-2, -1, -1, 0, 0, 1, 1, 2])))
         follow = []
         for k in FOL:
-            if rnd.random() < 0.15 + 0.35 * w: beh[k] = 1; follow.append(FOL[k])
+            if rnd.random() < (0.15 + 0.35 * w) * (scale or {}).get(k, 1): beh[k] = 1; follow.append(FOL[k])
         if rnd.random() < 0.3: follow.append("danke")
         cid = str(uuid.uuid4()); truth[cid] = {"einsatzart": task, "denkstufe": bloom, "thema": top + " | " + sub, **beh, "n_follow": len([f for f in follow if f != 'danke'])}
         msgs = [("user", txt)]
