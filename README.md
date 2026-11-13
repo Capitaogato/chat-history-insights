@@ -10,9 +10,20 @@ No installation, no account anywhere else, no data leaves ChatGPT.
 
 ## Quick start
 
-1. **[Download chat-history-insights.py](https://github.com/Capitaogato/chat-history-insights/releases/latest/download/chat-history-insights.py)** – a plain text file for ChatGPT, nothing to install.
-2. Open a new chat in ChatGPT, drag the file in and write: **"Create my AI usage report with the attached file."**
-3. Send. ChatGPT first explains the whole procedure, then guides you through exporting and uploading your chats and builds the report.
+The analysis works on your own ChatGPT data export. **Request it first** – it arrives by email and can take a while.
+
+### Part A – Preparation: request your chat history from OpenAI
+1. Open **chatgpt.com** in a browser on your computer, signed in to the account you want to analyse.
+2. Click your name or profile picture at the bottom left → **Settings** → **Data controls** → next to "Export data" click **Export** → **Confirm export**.
+   - No such option? Use [privacy.openai.com](https://privacy.openai.com) → "Make a Privacy Request" → "I have a consumer ChatGPT account" → "Download my data".
+   - Company accounts (ChatGPT Business/Enterprise) have no self-service export – only your IT department can help.
+3. Wait for OpenAI's email (usually minutes to hours, occasionally a few days; check your spam folder). **The download link is valid for 24 hours only.**
+4. Unzip the download. You only need the files whose names start with **conversations** (e.g. `conversations-000.json`). Count how many there are.
+
+### Part B – Analysis (about 30 minutes)
+5. **[Download chat-history-insights.py](https://github.com/Capitaogato/chat-history-insights/releases/latest/download/chat-history-insights.py)** – a plain text file for ChatGPT, nothing to install.
+6. Open a new chat in ChatGPT (same account), drag the file in and write: **"Create my AI usage report with the attached file."** Send – without the conversations files for now.
+7. Tell ChatGPT how many conversations files you have, then upload them in batches of at most 10. ChatGPT analyses them and gives you your report.
 
 **For non-technical users:** share the simple start page **https://capitaogato.github.io/chat-history-insights/** (download button, the sentence to copy, privacy note, DE/EN).
 
@@ -77,9 +88,20 @@ MIT, © 2026 Philipp Günther ([ai-spark.de](https://ai-spark.de)). Not affiliat
 **Wie arbeitest du eigentlich mit KI?** Eine Datei, in ChatGPT gezogen, macht aus deinem eigenen Chatverlauf einen persönlichen Bericht, wahlweise auf Deutsch oder Englisch. Er zeigt, wofür du KI nutzt, wie gut du sie instruierst, ob du Antworten prüfst und was sich über die Zeit verändert hat.
 
 ### Schnellstart
-1. **[chat-history-insights.py herunterladen](https://github.com/Capitaogato/chat-history-insights/releases/latest/download/chat-history-insights.py)** – eine normale Textdatei für ChatGPT, nichts zu installieren.
-2. In ChatGPT einen neuen Chat öffnen, die Datei hineinziehen und schreiben: **„Erstelle meinen KI-Bericht mit der angehängten Datei.“**
-3. Abschicken. ChatGPT führt dich durch den Export und das Hochladen deiner Chats und erstellt dann den Bericht.
+Die Auswertung arbeitet mit deinem eigenen ChatGPT-Datenexport. **Fordere ihn zuerst an** – er kommt per E-Mail und kann etwas dauern.
+
+**Teil A – Vorbereitung: Chatverlauf bei OpenAI anfordern**
+1. **chatgpt.com** am Computer im Browser öffnen, angemeldet mit dem Konto, das du auswerten willst.
+2. Unten links auf deinen Namen bzw. dein Profilbild → **Einstellungen** → **Datenkontrollen** → bei „Daten exportieren“ auf **Exportieren** → **Export bestätigen**.
+   - Kein Menüpunkt? Dann über [privacy.openai.com](https://privacy.openai.com) → „Make a Privacy Request“ → „I have a consumer ChatGPT account“ → „Download my data“.
+   - Firmenkonten (ChatGPT Business/Enterprise) bieten keinen eigenen Export, nur die IT-Abteilung kann helfen.
+3. Auf die E-Mail von OpenAI warten (meist Minuten bis Stunden, selten einige Tage; auch im Spam-Ordner nachsehen). **Der Download-Link gilt nur 24 Stunden.**
+4. Die ZIP-Datei entpacken. Du brauchst nur die Dateien, deren Name mit **conversations** beginnt (z. B. `conversations-000.json`). Zähle, wie viele es sind.
+
+**Teil B – Auswertung (etwa 30 Minuten)**
+5. **[chat-history-insights.py herunterladen](https://github.com/Capitaogato/chat-history-insights/releases/latest/download/chat-history-insights.py)** – eine normale Textdatei für ChatGPT, nichts zu installieren.
+6. In ChatGPT einen neuen Chat öffnen (selbes Konto), die Datei hineinziehen und schreiben: **„Erstelle meinen KI-Bericht mit der angehängten Datei.“** Abschicken, noch ohne die conversations-Dateien.
+7. ChatGPT die Zahl deiner conversations-Dateien nennen und sie dann in Paketen mit höchstens 10 Stück hochladen. ChatGPT wertet aus und gibt dir deinen Bericht.
 
 Einfache Startseite zum Weitergeben: **https://capitaogato.github.io/chat-history-insights/** · Ausführliche Anleitung: [Deutsch](docs/anleitung.de.md)
 
