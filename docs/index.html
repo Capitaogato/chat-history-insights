@@ -17,6 +17,7 @@
   h1 mark{background:linear-gradient(transparent 58%,var(--hi) 58%);color:inherit;padding:0 .1em}
   .lead{font-size:21px;color:#3a3833;margin:0 0 34px}
   ol.steps{list-style:none;padding:0;margin:0;counter-reset:s}
+  ol.steps.b{counter-reset:s 4}
   ol.steps>li{counter-increment:s;position:relative;padding:22px 0 22px 74px;border-top:1px solid var(--line)}
   ol.steps>li:last-child{border-bottom:1px solid var(--line)}
   ol.steps>li::before{content:counter(s);position:absolute;left:0;top:14px;font:700 52px/1 Georgia,serif;color:var(--accent)}
@@ -32,6 +33,14 @@
   .box h3{margin:0 0 6px;font-size:16px}
   details{font:16px/1.6 system-ui,sans-serif;border-top:1px solid var(--line);padding:12px 0}
   summary{cursor:pointer;font-weight:600}
+  .phase{font:700 13px/1 system-ui,sans-serif;letter-spacing:.12em;text-transform:uppercase;color:var(--accent);margin:46px 0 6px}
+  .phase-t{font:700 26px/1.2 system-ui,sans-serif;margin:0 0 6px}
+  .phase-d{color:var(--mute);font:16px/1.5 system-ui,sans-serif;margin:0 0 16px}
+  .wait{background:var(--hi);padding:14px 18px;border-radius:6px;font:16px/1.55 system-ui,sans-serif;margin:16px 0}
+  .path{display:inline-block;background:#fff;border:1px solid var(--line);border-radius:4px;padding:2px 8px;font:600 15px system-ui,sans-serif;margin:2px 0}
+  ul.sub{font:16px/1.6 system-ui,sans-serif;padding-left:20px;margin:6px 0}
+  .files{font:14px/1.7 ui-monospace,Menlo,monospace;background:#fff;border:1px solid var(--line);border-radius:6px;padding:10px 14px;margin:8px 0}
+  .files .y{background:#dff3df;font-weight:700} .files .n{color:#aaa;text-decoration:line-through}
   footer{margin-top:50px;font:13px system-ui,sans-serif;color:var(--mute)}
   footer a{color:var(--mute)}
   [data-l]{display:none} html[lang=de] [data-l=de], html[lang=en] [data-l=en]{display:revert}
@@ -44,18 +53,49 @@
   <div data-l="de">
     <h1>Wie arbeitest du <mark>eigentlich</mark> mit KI?</h1>
     <p class="lead">Eine Datei, in ChatGPT gezogen, macht aus deinem eigenen Chatverlauf einen persönlichen Bericht: wofür du KI nutzt, wie gut du sie anleitest, ob du Antworten prüfst – und was sich verändert hat.</p>
+    <p class="wait">⏱ <b>Plane zwei Etappen ein:</b> Zuerst forderst du bei OpenAI eine Kopie deiner Chats an. Die kommt per E-Mail, meist nach Minuten bis Stunden, selten erst nach einigen Tagen. Wenn sie da ist, machst du den Rest in etwa 30 Minuten.</p>
+
+    <div class="phase">Teil A · Vorbereitung</div>
+    <div class="phase-t">Deine Chats bei OpenAI anfordern</div>
+    <p class="phase-d">Das machst du einmal am Anfang. Danach heißt es warten.</p>
     <ol class="steps">
-      <li><h2>Datei herunterladen</h2>
-        <p><a class="btn" href="https://github.com/Capitaogato/chat-history-insights/releases/latest/download/chat-history-insights.py">⬇ Datei herunterladen</a></p>
-        <p class="small">Eine normale Textdatei für ChatGPT. Du musst sie nicht öffnen und nichts installieren.</p></li>
+      <li><h2>ChatGPT am Computer öffnen</h2>
+        <p>Im Browser auf <b>chatgpt.com</b>, angemeldet mit dem Konto, dessen Chats du auswerten möchtest.</p></li>
+      <li><h2>Export anfordern</h2>
+        <p>Klicke unten links auf deinen Namen bzw. dein Profilbild und dann der Reihe nach auf:</p>
+        <p><span class="path">Einstellungen</span> → <span class="path">Datenkontrollen</span> → bei „Daten exportieren“ auf <span class="path">Exportieren</span> → <span class="path">Export bestätigen</span></p>
+        <p class="small">Englische Oberfläche: Settings → Data controls → Export data → Export → Confirm export.<br>
+        Kein Menüpunkt „Daten exportieren“? Dann über <a href="https://privacy.openai.com">privacy.openai.com</a> → „Make a Privacy Request“ → „I have a consumer ChatGPT account“ → „Download my data“.<br>
+        Firmenkonto (ChatGPT Business/Enterprise)? Dort gibt es keinen eigenen Export – nur deine IT-Abteilung kann helfen.</p></li>
+      <li><h2>Auf die E-Mail warten und herunterladen</h2>
+        <p>OpenAI schickt dir eine E-Mail mit einem Download-Link. Schau auch im Spam-Ordner nach.</p>
+        <p class="wait">⚠️ <b>Der Link gilt nur 24 Stunden.</b> Lade die Datei also bald herunter und sei dabei im selben Konto angemeldet. Ist der Link abgelaufen, forderst du den Export einfach neu an.</p></li>
+      <li><h2>ZIP-Datei entpacken und die richtigen Dateien finden</h2>
+        <p>Du bekommst eine ZIP-Datei. <b>Mac:</b> Doppelklick. <b>Windows:</b> Rechtsklick → „Alle extrahieren“.</p>
+        <p>Im entpackten Ordner liegen viele Dateien. <b>Du brauchst nur die, deren Name mit „conversations“ beginnt.</b> Alles andere ignorierst du.</p>
+        <div class="files"><span class="y">conversations-000.json</span><br><span class="y">conversations-001.json</span><br><span class="y">conversations-002.json</span> …<br><span class="n">chat.html</span><br><span class="n">user.json</span><br><span class="n">message_feedback.json</span><br><span class="n">Bilder, Audiodateien …</span></div>
+        <p class="small">Bei manchen heißt es nur eine Datei <b>conversations.json</b>, bei anderen sind es 30 oder mehr. <b>Zähle, wie viele es sind</b> – ChatGPT fragt dich gleich danach.</p></li>
+    </ol>
+
+    <div class="phase">Teil B · Auswertung</div>
+    <div class="phase-t">Deinen Bericht erstellen</div>
+    <p class="phase-d">Sobald du die conversations-Dateien vor dir hast. Etwa 30 Minuten, davon wartest du die meiste Zeit.</p>
+    <ol class="steps b">
+      <li><h2>Diese Datei herunterladen</h2>
+        <p><a class="btn" href="https://github.com/Capitaogato/chat-history-insights/releases/latest/download/chat-history-insights.py">⬇ Auswertungsdatei herunterladen</a></p>
+        <p class="small">Eine normale Textdatei für ChatGPT (Endung .py). Du musst sie nicht öffnen und nichts installieren.</p></li>
       <li><h2>Neuen Chat in ChatGPT öffnen</h2>
-        <p>Am besten am Computer im Browser auf <b>chatgpt.com</b>, mit dem Konto, dessen Chats du auswerten willst.</p></li>
-      <li><h2>Datei hineinziehen und diesen Satz schreiben</h2>
+        <p>Im selben Konto, aus dem dein Export stammt.</p></li>
+      <li><h2>Die Datei hineinziehen und diesen Satz schreiben</h2>
         <div class="phrase"><code id="p-de">Erstelle meinen KI-Bericht mit der angehängten Datei.</code><button onclick="cp('p-de',this)">Kopieren</button></div>
-        <p class="small">Dann abschicken.</p></li>
-      <li><h2>ChatGPT führt dich durch den Rest</h2>
-        <p>Es erklärt dir, wie du deine Chats exportierst und hochlädst, wertet sie aus und gibt dir deinen Bericht als Datei zum Öffnen im Browser.</p>
-        <p class="small">Dauer: etwa 30 Minuten plus Wartezeit auf die E-Mail von OpenAI mit deinem Export.</p></li>
+        <p class="small">Dann abschicken. Noch keine conversations-Dateien mitschicken!</p></li>
+      <li><h2>ChatGPT fragt, wie viele conversations-Dateien du hast</h2>
+        <p>Schreib einfach die Zahl, z. B. <b>23</b>.</p></li>
+      <li><h2>Die conversations-Dateien in Paketen hochladen</h2>
+        <p>ChatGPT nimmt höchstens <b>10 Dateien pro Nachricht</b> an. Markiere 10 Dateien, zieh sie in den Chat und schick ab. ChatGPT sagt dir nach jedem Paket, wie viele noch fehlen.</p>
+        <p class="small">Mehrere Dateien markieren: Cmd-Taste (Mac) bzw. Strg-Taste (Windows) gedrückt halten und anklicken.</p></li>
+      <li><h2>Warten und Bericht öffnen</h2>
+        <p>ChatGPT wertet aus (15–25 Minuten) und gibt dir am Ende einen Link zu deinem Bericht. Klicke darauf und öffne die Datei mit Doppelklick – sie öffnet sich in deinem Browser.</p></li>
     </ol>
     <div class="box"><h3>Und meine Daten?</h3>
       Deine Chats liegen bereits bei OpenAI – der Export ist nur eine Kopie davon. Du gibst also nichts Neues und keinem neuen Anbieter etwas preis. Lade den Export nur in dem Konto hoch, aus dem er stammt. Im Bericht stehen keine Chat-Texte. Dieses Projekt sammelt keine Daten.</div>
@@ -70,18 +110,48 @@
   <div data-l="en">
     <h1>How do you <mark>actually</mark> work with AI?</h1>
     <p class="lead">One file, dropped into ChatGPT, turns your own chat history into a personal report: what you use AI for, how well you brief it, whether you check its answers – and what has changed.</p>
+    <p class="wait">⏱ <b>Plan for two stages:</b> first you request a copy of your chats from OpenAI. It arrives by email, usually within minutes to hours, occasionally after a few days. Once it's there, the rest takes about 30 minutes.</p>
+
+    <div class="phase">Part A · Preparation</div>
+    <div class="phase-t">Request your chats from OpenAI</div>
+    <p class="phase-d">You do this once at the start. Then you wait.</p>
     <ol class="steps">
-      <li><h2>Download the file</h2>
-        <p><a class="btn" href="https://github.com/Capitaogato/chat-history-insights/releases/latest/download/chat-history-insights.py">⬇ Download the file</a></p>
-        <p class="small">A plain text file for ChatGPT. You don't need to open it or install anything.</p></li>
+      <li><h2>Open ChatGPT on your computer</h2>
+        <p>In your browser at <b>chatgpt.com</b>, signed in to the account whose chats you want to analyse.</p></li>
+      <li><h2>Request the export</h2>
+        <p>Click your name or profile picture at the bottom left, then:</p>
+        <p><span class="path">Settings</span> → <span class="path">Data controls</span> → next to "Export data" click <span class="path">Export</span> → <span class="path">Confirm export</span></p>
+        <p class="small">No "Export data" option? Use <a href="https://privacy.openai.com">privacy.openai.com</a> → "Make a Privacy Request" → "I have a consumer ChatGPT account" → "Download my data".<br>
+        Company account (ChatGPT Business/Enterprise)? There is no self-service export – only your IT department can help.</p></li>
+      <li><h2>Wait for the email and download</h2>
+        <p>OpenAI emails you a download link. Check your spam folder too.</p>
+        <p class="wait">⚠️ <b>The link is only valid for 24 hours.</b> Download soon, signed in to the same account. If it has expired, simply request the export again.</p></li>
+      <li><h2>Unzip and find the right files</h2>
+        <p>You get a ZIP file. <b>Mac:</b> double-click. <b>Windows:</b> right-click → "Extract all".</p>
+        <p>The folder contains many files. <b>You only need the ones whose names start with "conversations".</b> Ignore everything else.</p>
+        <div class="files"><span class="y">conversations-000.json</span><br><span class="y">conversations-001.json</span><br><span class="y">conversations-002.json</span> …<br><span class="n">chat.html</span><br><span class="n">user.json</span><br><span class="n">message_feedback.json</span><br><span class="n">images, audio files …</span></div>
+        <p class="small">Some people have a single <b>conversations.json</b>, others 30 or more. <b>Count how many there are</b> – ChatGPT will ask you.</p></li>
+    </ol>
+
+    <div class="phase">Part B · Analysis</div>
+    <div class="phase-t">Create your report</div>
+    <p class="phase-d">As soon as you have the conversations files. About 30 minutes, mostly waiting.</p>
+    <ol class="steps b">
+      <li><h2>Download this file</h2>
+        <p><a class="btn" href="https://github.com/Capitaogato/chat-history-insights/releases/latest/download/chat-history-insights.py">⬇ Download the analysis file</a></p>
+        <p class="small">A plain text file for ChatGPT (.py). You don't need to open it or install anything.</p></li>
       <li><h2>Open a new chat in ChatGPT</h2>
-        <p>Ideally on a computer at <b>chatgpt.com</b>, signed in to the account whose chats you want to analyse.</p></li>
+        <p>In the same account your export came from.</p></li>
       <li><h2>Drag the file in and write this sentence</h2>
         <div class="phrase"><code id="p-en">Create my AI usage report with the attached file.</code><button onclick="cp('p-en',this)">Copy</button></div>
-        <p class="small">Then send.</p></li>
-      <li><h2>ChatGPT guides you through the rest</h2>
-        <p>It explains how to export and upload your chats, analyses them and gives you your report as a file to open in your browser.</p>
-        <p class="small">Takes about 30 minutes, plus waiting for OpenAI's email with your export.</p></li>
+        <p class="small">Then send. Don't attach the conversations files yet!</p></li>
+      <li><h2>ChatGPT asks how many conversations files you have</h2>
+        <p>Just type the number, e.g. <b>23</b>.</p></li>
+      <li><h2>Upload the conversations files in batches</h2>
+        <p>ChatGPT accepts at most <b>10 files per message</b>. Select 10 files, drag them into the chat and send. After each batch ChatGPT tells you how many are left.</p>
+        <p class="small">To select several files, hold Cmd (Mac) or Ctrl (Windows) and click each one.</p></li>
+      <li><h2>Wait and open your report</h2>
+        <p>ChatGPT analyses (15–25 minutes) and finally gives you a link to your report. Click it and double-click the file – it opens in your browser.</p></li>
     </ol>
     <div class="box"><h3>What about my data?</h3>
       Your chats are already stored at OpenAI – the export is just a copy. You're not sharing anything new or with any new provider. Upload the export only into the account it came from. The report contains no chat texts. This project collects no data.</div>

@@ -239,7 +239,7 @@ Deine Chats liegen bereits bei OpenAI – der Export ist nur eine Kopie davon. D
 *Kein Menüpunkt „Daten exportieren“?* Dann geht es über das Datenschutzportal von OpenAI: **privacy.openai.com** → „Make a Privacy Request“ → „I have a consumer ChatGPT account“ → „Download my data“.
 *Firmenkonto (ChatGPT Business oder Enterprise)?* Dort gibt es keinen eigenen Export – nur deine IT-Abteilung kann ihn erstellen.
 
-👉 **Melde dich hier, sobald du den Ordner vor dir hast, und schreib mir, wie viele Dateien mit „conversations“ beginnen.**""",
+👉 **Hast du den Export schon? Dann schreib mir jetzt, wie viele Dateien mit „conversations“ beginnen. Sonst melde dich hier mit dieser Zahl, sobald du den Ordner vor dir hast.**""",
 "en": """Hi! I'll create a personal report on how you work with ChatGPT – your strengths, blind spots and tips for your next step. You'll get the report in English. If you'd rather have it in German, just say so.
 
 **How it works – about 30 minutes in total, plus waiting for OpenAI's email:**
@@ -264,7 +264,7 @@ Your chats are already stored at OpenAI – the export is just a copy. You're no
 *No "Export data" option?* Use OpenAI's privacy portal instead: **privacy.openai.com** → "Make a Privacy Request" → "I have a consumer ChatGPT account" → "Download my data".
 *Company account (ChatGPT Business or Enterprise)?* There is no self-service export there – only your IT department can create one.
 
-👉 **Let me know here as soon as you have the folder open, and tell me how many files start with "conversations".**"""}
+👉 **Already have your export? Then tell me now how many files start with "conversations". Otherwise come back here with that number as soon as you have the folder open.**"""}
 
 def begruessung(sprache="de"):
     """ERSTE ANTWORT AN DEN NUTZER. sprache = Sprache seiner ersten Nachricht ("de"/"en"). Text wörtlich ausgeben."""
