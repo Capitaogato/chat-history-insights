@@ -1,6 +1,6 @@
 # chat-history-insights
 
-**How do you actually work with AI?** One file, dropped into ChatGPT, turns your own chat history into a personal report: what you use AI for, how well you brief it, whether you check its answers, and what has changed over time.
+**How do you actually work with AI?** One file, dropped into ChatGPT, turns your entire ChatGPT history – every chat you have ever had – into a personal report: what you use AI for, how well you brief it, whether you check its answers, and what has changed over time.
 
 No installation, no account anywhere else, no data leaves ChatGPT.
 
@@ -12,7 +12,10 @@ No installation, no account anywhere else, no data leaves ChatGPT.
 
 The analysis works on your own ChatGPT data export. **Request it first** – it arrives by email and can take a while.
 
-### Part A – Preparation: request your chat history from OpenAI
+### Part A – Preparation: request your entire ChatGPT history from OpenAI
+
+Under data protection law (in the EU: GDPR, Art. 15 and 20) you are entitled to a copy of all data OpenAI stores about you. The export therefore gives you all your chats, not just recent ones.
+
 1. Open **chatgpt.com** in a browser on your computer, signed in to the account you want to analyse.
 2. Click your name or profile picture at the bottom left → **Settings** → **Data controls** → next to "Export data" click **Export** → **Confirm export**.
    - No such option? Use [privacy.openai.com](https://privacy.openai.com) → "Make a Privacy Request" → "I have a consumer ChatGPT account" → "Download my data".
@@ -85,12 +88,15 @@ MIT, © 2026 Philipp Günther ([ai-spark.de](https://ai-spark.de)). Not affiliat
 <a id="deutsch"></a>
 ## Deutsch
 
-**Wie arbeitest du eigentlich mit KI?** Eine Datei, in ChatGPT gezogen, macht aus deinem eigenen Chatverlauf einen persönlichen Bericht, wahlweise auf Deutsch oder Englisch. Er zeigt, wofür du KI nutzt, wie gut du sie instruierst, ob du Antworten prüfst und was sich über die Zeit verändert hat.
+**Wie arbeitest du eigentlich mit KI?** Eine Datei, in ChatGPT gezogen, macht aus deiner gesamten ChatGPT-Historie – allen Chats, die du je geführt hast – einen persönlichen Bericht, wahlweise auf Deutsch oder Englisch. Er zeigt, wofür du KI nutzt, wie gut du sie instruierst, ob du Antworten prüfst und was sich über die Zeit verändert hat.
 
 ### Schnellstart
 Die Auswertung arbeitet mit deinem eigenen ChatGPT-Datenexport. **Fordere ihn zuerst an** – er kommt per E-Mail und kann etwas dauern.
 
-**Teil A – Vorbereitung: Chatverlauf bei OpenAI anfordern**
+**Teil A – Vorbereitung: deine gesamte ChatGPT-Historie bei OpenAI anfordern**
+
+Nach der DSGVO hast du das Recht auf Auskunft über alle bei OpenAI gespeicherten Daten (Art. 15) und auf eine maschinenlesbare Kopie (Art. 20). Der Export liefert dir deshalb alle deine Chats, nicht nur die letzten.
+
 1. **chatgpt.com** am Computer im Browser öffnen, angemeldet mit dem Konto, das du auswerten willst.
 2. Unten links auf deinen Namen bzw. dein Profilbild → **Einstellungen** → **Datenkontrollen** → bei „Daten exportieren“ auf **Exportieren** → **Export bestätigen**.
    - Kein Menüpunkt? Dann über [privacy.openai.com](https://privacy.openai.com) → „Make a Privacy Request“ → „I have a consumer ChatGPT account“ → „Download my data“.
