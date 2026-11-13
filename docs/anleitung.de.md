@@ -9,3 +9,5 @@
    > **Erstelle meinen KI-Bericht mit der angehängten Datei.**
 
 4. **Abschicken.** Ab jetzt führt dich ChatGPT Schritt für Schritt durch alles Weitere, auch durch den Export deiner Chats.
+
+Den Bericht gibt es auf Deutsch oder Englisch. Sag ChatGPT einfach, welche Sprache du möchtest.

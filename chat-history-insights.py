@@ -754,11 +754,25 @@ def _ax(fig_w=8.5, h=3.2):
     for s in ("left", "bottom"): ax.spines[s].set_color("#d8d4cb")
     ax.tick_params(colors=MUTE, labelsize=8); return fig, ax
 
-def _badge(k): t, c = BADGE[k]; return f'<span class="badge" style="background:{c}">{t}</span>'
+BADGE_EN = {"gemessen": "Measured", "eingeordnet": "Classified", "abgesichert": "Supported", "unbelegt": "Not supported"}
+def _badge(k): t, c = BADGE[k]; return f'<span class="badge" style="background:{c}">{_t(t, BADGE_EN[k])}</span>'
 def _pc(x): return "–" if x is None or (isinstance(x, float) and np.isnan(x)) else f"{x:.0%}"
 
-def bericht(schritte):
-    """schritte: [{"verhalten": "<schlüssel>", "text": "…konkrete Formulierung…"}] – bis zu 3, nur für kandidaten()."""
+_L = "de"
+def _t(de, en): return en if _L == "en" else de
+IND_EN = {"ziel": "State the goal", "format": "Specify format", "adressat": "Name audience/tone", "kontext": "Give context", "beispiel": "Give an example",
+          "arbeitsweise": "Steer the approach", "nachbessern": "Refine purposefully", "pruefen": "Check results", "eigenansatz": "Bring your own approach"}
+TASK_EN = {"schreiben": "Writing", "code": "Coding", "analyse": "Analysing", "recherche": "Research", "lernen": "Learning", "bewerten": "Evaluating",
+           "rat": "Advice", "planen": "Planning", "ideen": "Ideas", "bild": "Images", "umformen": "Translate/convert", "kurzauskunft": "Quick facts", "unklar": "Unclear"}
+def _pname(n):
+    if _L != "en" or not n: return n
+    return (n.replace("heute", "today").replace("ein Jahr zuvor", "a year earlier").replace("Anfangszeit", "early period").replace("zuletzt", "latest"))
+
+def bericht(schritte, sprache="de"):
+    """schritte: [{"verhalten": "<schlüssel>", "text": "…konkrete Formulierung…"}] – bis zu 3, nur für kandidaten().
+    sprache: "de" oder "en" – Sprache des Berichts (Texte der Schritte in derselben Sprache übergeben)."""
+    global _L; _L = "en" if str(sprache).lower().startswith("en") else "de"
+    INAME = {k: (IND_EN[k] if _L == "en" else v[0]) for k, v in IND.items()}
     import matplotlib.ticker as mt
     s = _need("auswertung"); G = s["gates"]
     if G["auswertung"]["stufe"] != "OK": raise RuntimeError("Kontrolle nicht bestanden: " + G["auswertung"]["grund"])
@@ -766,47 +780,49 @@ def bericht(schritte):
     bad = [x for x in schritte if x.get("verhalten") not in cand]
     if bad: raise ValueError(f"Nächste Schritte nur zu belegten Verhalten: {cand}. Abgelehnt: {[x.get('verhalten') for x in bad]}")
     rel = R["zuverlaessig"]; key = "jetzt" if "jetzt" in R else "gesamt"
-    nowname = Z["jetzt"]["name"] if mode != "BESTAND" else "Gesamtzeitraum"; cmpname = (Z.get("vergleich") or {}).get("name", "")
+    nowname = _pname(Z["jetzt"]["name"]) if mode != "BESTAND" else _t("Gesamtzeitraum", "whole period"); cmpname = _pname((Z.get("vergleich") or {}).get("name", ""))
     limits = []
-    if G["daten"]["stufe"] != "OK": limits.append("Daten: " + G["daten"]["grund"])
-    if mode != "VOLL": limits.append("Zeiträume: " + G["zeitraeume"]["grund"])
-    if G["themen"]["stufe"] in ("WARN", "NICHT_BELASTBAR"): limits.append("Themen: " + G["themen"]["grund"])
-    nb = [IND[k][0] if k in IND else k for k, v in rel.items() if not v]
-    if nb: limits.append("Nicht stabil messbar: " + ", ".join(nb))
-    kind = "Vollbericht" if mode == "VOLL" and not limits else ("Bestandsaufnahme" if mode == "BESTAND" else "Eingeschränkter Bericht")
+    if G["daten"]["stufe"] != "OK": limits.append(_t("Daten: " + G["daten"]["grund"], "Data: some files could not be read, or dates are missing or implausible"))
+    if mode != "VOLL": limits.append(_t("Zeiträume: " + G["zeitraeume"]["grund"], {"OHNE_VERGLEICH": "Time: no reliable comparison period, so no statements about change", "BESTAND": "Time: data is not current or too sparse, so no statements about today"}.get(mode, "")))
+    if G["themen"]["stufe"] in ("WARN", "NICHT_BELASTBAR"): limits.append(_t("Themen: " + G["themen"]["grund"], f"Topics: {G['themen']['rest']:.0%} of chats could not be assigned to a topic"))
+    nb = [INAME[k] if k in IND else _t(k, {"einsatzart": "task type", "denkstufe": "cognitive level", "thema": "topic"}.get(k, k)) for k, v in rel.items() if not v]
+    if nb: limits.append(_t("Nicht stabil messbar: ", "Not measured reliably: ") + ", ".join(nb))
+    kind_de = "Vollbericht" if mode == "VOLL" and not limits else ("Bestandsaufnahme" if mode == "BESTAND" else "Eingeschränkter Bericht")
+    kind = _t(kind_de, {"Vollbericht": "Full report", "Bestandsaufnahme": "Inventory", "Eingeschränkter Bericht": "Limited report"}[kind_de])
     df = _df(); sec = []
 
     # Kopf: Kernaussage
     idx, stg = R["indizes"], R["reifegrad"]
-    names = [["selten", "teilweise", "häufig"], ["selten", "teilweise", "häufig"]]
+    names = [_t(["selten", "teilweise", "häufig"], ["rarely", "sometimes", "often"])] * 2
     if stg:
         p0, k0 = stg["unten"]; p1, k1 = stg["oben"]
-        def rng_(a, b, lst): return lst[a] if a == b else f"{lst[a]} bis {lst[b]}"
-        head = (f"Du beschreibst Aufträge <b>{rng_(p0, p1, names[0])}</b> präzise und prüfst Ergebnisse <b>{rng_(k0, k1, names[1])}</b> kritisch."
-                + ("" if stg["eindeutig"] else " Die Daten erlauben nur eine Spanne, keine genaue Einstufung."))
+        def rng_(a, b, lst): return lst[a] if a == b else f"{lst[a]} {_t('bis', 'to')} {lst[b]}"
+        head = _t(f"Du beschreibst Aufträge <b>{rng_(p0, p1, names[0])}</b> präzise und prüfst Ergebnisse <b>{rng_(k0, k1, names[1])}</b> kritisch.",
+                  f"You <b>{rng_(p0, p1, names[0])}</b> brief the AI precisely and <b>{rng_(k0, k1, names[1])}</b> check its results critically.") \
+               + ("" if stg["eindeutig"] else _t(" Die Daten erlauben nur eine Spanne, keine genaue Einstufung.", " The data only allows a range, not an exact level."))
     else:
-        head = "Für eine Gesamteinschätzung deines Reifegrads reichen die Daten nicht. Der Bericht zeigt, was sich belastbar sagen lässt."
+        head = _t("Für eine Gesamteinschätzung deines Reifegrads reichen die Daten nicht. Der Bericht zeigt, was sich belastbar sagen lässt.", "The data is not sufficient for an overall assessment. This report shows what can be said reliably.")
 
     # 1 Profil
     V = R[key]["verhalten"]; items = sorted([(V[k]["anteil"] or 0, k) for k in IND if V[k]["n"] >= 20], reverse=True)
     strong = [k for a, k in items if rel[k] and a >= 0.35][:3]; weak = [k for a, k in items[::-1] if rel[k] and a < 0.15][:3]
-    li = lambda ks, f: "".join(f"<li>{f(k)}</li>" for k in ks) or "<li class=mute>keine belastbare Aussage</li>"
-    fs = lambda k: "<b>%s</b> – in %d %% der passenden Chats" % (IND[k][0], round(100 * V[k]["anteil"]))
-    fw = lambda k: "<b>%s</b> – nur in %d %% von %d passenden Chats" % (IND[k][0], round(100 * V[k]["anteil"]), V[k]["n"])
-    cards = (f"<div class=cards><div class=card><h3>Stärken</h3><ul>{li(strong, fs)}</ul></div>"
-             f"<div class=card><h3>Blinde Flecken</h3><ul>{li(weak, fw)}</ul></div>"
-             f"<div class='card acc'><h3>Nächster Schritt</h3><p>{html.escape(schritte[0]['text']) if schritte else 'keine belastbare Empfehlung'}</p></div></div>")
+    li = lambda ks, f: "".join(f"<li>{f(k)}</li>" for k in ks) or _t("<li class=mute>keine belastbare Aussage</li>", "<li class=mute>no reliable statement</li>")
+    fs = lambda k: _t("<b>%s</b> – in %d %% der passenden Chats", "<b>%s</b> – in %d %% of relevant chats") % (INAME[k], round(100 * V[k]["anteil"]))
+    fw = lambda k: _t("<b>%s</b> – nur in %d %% von %d passenden Chats", "<b>%s</b> – only in %d %% of %d relevant chats") % (INAME[k], round(100 * V[k]["anteil"]), V[k]["n"])
+    cards = (f"<div class=cards><div class=card><h3>{_t("Stärken", "Strengths")}</h3><ul>{li(strong, fs)}</ul></div>"
+             f"<div class=card><h3>{_t("Blinde Flecken", "Blind spots")}</h3><ul>{li(weak, fw)}</ul></div>"
+             f"<div class='card acc'><h3>{_t("Nächster Schritt", "Next step")}</h3><p>{html.escape(schritte[0]['text']) if schritte else _t('keine belastbare Empfehlung', 'no reliable recommendation')}</p></div></div>")
     fig, ax = _ax(8.5, 0.42 * len(IND) + 0.8)
     ks = [k for _, k in sorted([(V[k]["anteil"] or 0, k) for k in IND])]
     for y, k in enumerate(ks):
         v = V[k]
-        if v["n"] < 20: ax.text(0.01, y, f"zu wenige passende Chats ({v['n']})", va="center", fontsize=7.5, color=MUTE); continue
+        if v["n"] < 20: ax.text(0.01, y, _t("zu wenige passende Chats", "too few relevant chats") + f" ({v['n']})", va="center", fontsize=7.5, color=MUTE); continue
         c = ACC if rel[k] else "#c9d3ec"
         ax.barh(y, v["anteil"], color=c, height=0.6); ax.errorbar(v["anteil"], y, xerr=[[v["anteil"] - v["unten"]], [v["oben"] - v["anteil"]]], color=INK, lw=0.8, capsize=2)
-        ax.text(min(v["oben"] + 0.02, 0.93), y, f"{v['n']} Chats" + ("" if rel[k] else " · unsicher"), va="center", fontsize=7, color=MUTE)
-    ax.set_yticks(range(len(ks))); ax.set_yticklabels([IND[k][0] for k in ks], fontsize=8); ax.set_xlim(0, 1); ax.xaxis.set_major_formatter(mt.PercentFormatter(1))
-    sec.append((f"So arbeitest du {nowname} mit KI", _badge("eingeordnet"), cards + _png(fig) +
-                "<p class=read>So liest du das: Der Balken zeigt, in wie vielen passenden Chats du das tust. Die Striche zeigen die Spanne, in der der echte Wert sehr wahrscheinlich liegt. Helle Balken: Messung nicht stabil, keine Grundlage für Tipps.</p>"))
+        ax.text(min(v["oben"] + 0.02, 0.93), y, f"{v['n']} Chats" + ("" if rel[k] else _t(" · unsicher", " · uncertain")), va="center", fontsize=7, color=MUTE)
+    ax.set_yticks(range(len(ks))); ax.set_yticklabels([INAME[k] for k in ks], fontsize=8); ax.set_xlim(0, 1); ax.xaxis.set_major_formatter(mt.PercentFormatter(1))
+    sec.append((_t(f"So arbeitest du {nowname} mit KI", f"How you work with AI ({nowname})"), _badge("eingeordnet"), cards + _png(fig) +
+                _t("<p class=read>So liest du das: Der Balken zeigt, in wie vielen passenden Chats du das tust. Die Striche zeigen die Spanne, in der der echte Wert sehr wahrscheinlich liegt. Helle Balken: Messung nicht stabil, keine Grundlage für Tipps.</p>", "<p class=read>How to read this: each bar shows in how many relevant chats you do this. The whiskers show the range the true value very likely falls in. Pale bars: not measured reliably, no basis for tips.</p>")))
 
     # 2 Veränderung
     if mode == "VOLL":
@@ -814,14 +830,14 @@ def bericht(schritte):
         for y, k in enumerate(ks):
             a, b = Vc[k]["anteil"] or 0, V[k]["anteil"] or 0; sure = C[k]["klasse"] == "abgesichert"; al = 1 if sure else 0.3
             ax.plot([a, b], [y, y], color=GREY, lw=2, alpha=al); ax.scatter([a], [y], color=GREY, s=40, alpha=al, zorder=3); ax.scatter([b], [y], color=ACC, s=40, alpha=al, zorder=3)
-            if sure: ax.text(max(a, b) + 0.03, y, f"{b - a:+.0%}".replace("%", " Pkt."), va="center", fontsize=7.5, color=INK)
-        ax.set_yticks(range(len(ks))); ax.set_yticklabels([IND[k][0] for k in ks], fontsize=8); ax.set_xlim(0, 1); ax.xaxis.set_major_formatter(mt.PercentFormatter(1))
+            if sure: ax.text(max(a, b) + 0.03, y, f"{b - a:+.0%}".replace("%", _t(" Pkt.", " pts")), va="center", fontsize=7.5, color=INK)
+        ax.set_yticks(range(len(ks))); ax.set_yticklabels([INAME[k] for k in ks], fontsize=8); ax.set_xlim(0, 1); ax.xaxis.set_major_formatter(mt.PercentFormatter(1))
         sure = [k for k in IND if C[k]["klasse"] == "abgesichert"]
-        txt = ("Belegte Veränderungen: " + ", ".join(f"<b>{IND[k][0]}</b> ({'häufiger' if C[k]['diff'] > 0 else 'seltener'})" for k in sure)) if sure else "Es gibt keine Veränderung, die über Zufall und Messunsicherheit hinausgeht."
-        sec.append((f"Was sich verändert hat: {cmpname} → {nowname}", _badge("abgesichert"), f"<p>{txt}</p>" + _png(fig) +
-                    "<p class=read>Grau = früher, Blau = heute. Kräftig dargestellt ist nur, was statistisch trägt UND größer ist als die Messunsicherheit. Blasse Linien: nicht belegbar.</p>"))
+        txt = (_t("Belegte Veränderungen: ", "Supported changes: ") + ", ".join(f"<b>{INAME[k]}</b> ({_t('häufiger', 'more often') if C[k]['diff'] > 0 else _t('seltener', 'less often')})" for k in sure)) if sure else _t("Es gibt keine Veränderung, die über Zufall und Messunsicherheit hinausgeht.", "No change goes beyond chance and measurement uncertainty.")
+        sec.append((_t("Was sich verändert hat", "What has changed") + f": {cmpname} → {nowname}", _badge("abgesichert"), f"<p>{txt}</p>" + _png(fig) +
+                    _t("<p class=read>Grau = früher, Blau = heute. Kräftig dargestellt ist nur, was statistisch trägt UND größer ist als die Messunsicherheit. Blasse Linien: nicht belegbar.</p>", "<p class=read>Grey = earlier, blue = today. Only changes that are statistically supported AND larger than the measurement uncertainty are shown in full colour. Pale lines: not supported.</p>")))
     else:
-        sec.append(("Was sich verändert hat", _badge("unbelegt"), f"<p>Ein Vergleich über die Zeit ist mit deinen Daten nicht möglich: {html.escape(G['zeitraeume']['grund'])}.</p>"))
+        sec.append((_t("Was sich verändert hat", "What has changed"), _badge("unbelegt"), _t(f"<p>Ein Vergleich über die Zeit ist mit deinen Daten nicht möglich: {html.escape(G['zeitraeume']['grund'])}.</p>", "<p>A comparison over time is not possible with your data: " + ("no second period with enough chats" if mode == "OHNE_VERGLEICH" else "the data is not current or too sparse") + ".</p>")))
 
     # 3 Nutzung
     body = ""
@@ -829,15 +845,15 @@ def bericht(schritte):
         fig, ax = _ax(8.5, 3.4); ps = [("vergleich", GREY, cmpname)] if mode == "VOLL" else []; ps.append((key, ACC, nowname))
         cats = [c for c in TASKS if any(R[p]["einsatzart"].get(c, 0) for p, _, _ in ps)]; x = np.arange(len(cats)); w = 0.8 / len(ps)
         for j, (p, col, nm) in enumerate(ps): ax.bar(x + j * w - 0.4 + w / 2, [R[p]["einsatzart"].get(c, 0) for c in cats], w, color=col, label=nm)
-        ax.set_xticks(x); ax.set_xticklabels([TASK_DE[c] for c in cats], rotation=35, ha="right", fontsize=8); ax.yaxis.set_major_formatter(mt.PercentFormatter(1)); ax.legend(frameon=False, fontsize=8)
-        body += "<h3>Wofür du KI nutzt</h3>" + _png(fig)
-    else: body += "<p class=mute>Einsatzarten konnten nicht stabil eingeordnet werden.</p>"
+        ax.set_xticks(x); ax.set_xticklabels([_t(TASK_DE[c], TASK_EN[c]) for c in cats], rotation=35, ha="right", fontsize=8); ax.yaxis.set_major_formatter(mt.PercentFormatter(1)); ax.legend(frameon=False, fontsize=8)
+        body += _t("<h3>Wofür du KI nutzt</h3>", "<h3>What you use AI for</h3>") + _png(fig)
+    else: body += _t("<p class=mute>Einsatzarten konnten nicht stabil eingeordnet werden.</p>", "<p class=mute>Task types could not be classified reliably.</p>")
     if rel["denkstufe"]:
         fig, ax = _ax(8.5, 2.8); ps = [("vergleich", GREY, cmpname)] if mode == "VOLL" else []; ps.append((key, ACC, nowname)); x = np.arange(1, 7); w = 0.8 / len(ps)
         for j, (p, col, nm) in enumerate(ps): ax.bar(x + j * w - 0.4 + w / 2, [R[p]["denkstufe"].get(str(i), R[p]["denkstufe"].get(i, 0)) for i in x], w, color=col, label=nm)
-        ax.set_xticks(x); ax.set_xticklabels(["erinnern", "verstehen", "anwenden", "analysieren", "bewerten", "erschaffen"], fontsize=8); ax.yaxis.set_major_formatter(mt.PercentFormatter(1)); ax.legend(frameon=False, fontsize=8)
-        body += "<h3>Wie viel Denkarbeit deine Anfragen verlangen</h3>" + _png(fig) + "<p class=read>Eine höhere Stufe heißt nicht „besser“: Viele Aufgaben brauchen bewusst nur eine einfache Antwort.</p>"
-    else: body += "<p class=mute>Denkstufen konnten nicht unabhängig eingeordnet werden.</p>"
+        ax.set_xticks(x); ax.set_xticklabels(_t(["erinnern", "verstehen", "anwenden", "analysieren", "bewerten", "erschaffen"], ["remember", "understand", "apply", "analyse", "evaluate", "create"]), fontsize=8); ax.yaxis.set_major_formatter(mt.PercentFormatter(1)); ax.legend(frameon=False, fontsize=8)
+        body += _t("<h3>Wie viel Denkarbeit deine Anfragen verlangen</h3>", "<h3>How much thinking your requests demand</h3>") + _png(fig) + _t("<p class=read>Eine höhere Stufe heißt nicht „besser“: Viele Aufgaben brauchen bewusst nur eine einfache Antwort.</p>", "<p class=read>A higher level does not mean \"better\": many tasks deliberately need only a simple answer.</p>")
+    else: body += _t("<p class=mute>Denkstufen konnten nicht unabhängig eingeordnet werden.</p>", "<p class=mute>Cognitive levels could not be classified independently.</p>")
     tg = G["themen"]
     if tg["stufe"] != "NICHT_BELASTBAR":
         th = pd.read_pickle(P("themen.pkl")).merge(df[["id", "t"]], on="id"); th = th[th["thema"] != "REST"]
@@ -849,48 +865,56 @@ def bericht(schritte):
         ax.set_yticks(range(len(H))); ax.set_yticklabels([t.split(" / ")[-1][:32] for t in H.index], fontsize=7.5)
         ax.set_xticks(range(0, H.shape[1], 2)); ax.set_xticklabels([str(c) for c in H.columns[::2]], fontsize=7, rotation=45)
         for sp in ax.spines.values(): sp.set_visible(False)
-        body += "<h3>Deine Themen über die Zeit</h3>" + _png(fig) + f"<p class=read>Anteil an allen Chats je Quartal. Leere Felder: weniger als 20 Chats im Quartal. Nicht zugeordnet: {tg['rest']:.0%} der Chats" + (" – Themen daher nur eingeschränkt aussagekräftig." if tg["stufe"] == "WARN" else ".") + "</p>"
-    else: body += f"<p class=mute>Themen nicht belastbar bestimmbar ({tg['rest']:.0%} der Chats ließen sich keinem Thema sinnvoll zuordnen).</p>"
-    sec.append(("Wofür und wie du KI nutzt", _badge("eingeordnet"), body))
+        body += _t("<h3>Deine Themen über die Zeit</h3>", "<h3>Your topics over time</h3>") + _png(fig) + _t(f"<p class=read>Anteil an allen Chats je Quartal. Leere Felder: weniger als 20 Chats im Quartal. Nicht zugeordnet: {tg['rest']:.0%} der Chats" + (" – Themen daher nur eingeschränkt aussagekräftig." if tg["stufe"] == "WARN" else ".") + "</p>", f"<p class=read>Share of all chats per quarter. Empty cells: fewer than 20 chats in the quarter. Unassigned: {tg['rest']:.0%} of chats" + (", so topics are only partly meaningful." if tg["stufe"] == "WARN" else ".") + "</p>")
+    else: body += _t(f"<p class=mute>Themen nicht belastbar bestimmbar ({tg['rest']:.0%} der Chats ließen sich keinem Thema sinnvoll zuordnen).</p>", f"<p class=mute>Topics could not be determined reliably ({tg['rest']:.0%} of chats could not be assigned to a meaningful topic).</p>")
+    sec.append((_t("Wofür und wie du KI nutzt", "What and how you use AI"), _badge("eingeordnet"), body))
 
     # 4 Basisdaten
     ok = df[df["zeit_ok"]]; meta = G["daten"]["bericht"]["metadaten"]
-    kp = [(f"{len(df):,}".replace(",", "."), "Chats"), (f"{int(df['turns'].sum()):,}".replace(",", "."), "eigene Nachrichten"),
-          (str(ok["t"].dt.to_period("M").nunique()), "aktive Monate"), (str(int(df[~df["voice"]]["first"].str.len().median())), "Zeichen in der ersten Nachricht (Median)")]
-    if meta["gpt"] == "ok": kp.append((str(int((df.get("gpt_art", pd.Series("")) != "").sum())), "Chats in GPTs oder Projekten"))
+    kp = [(f"{len(df):,}".replace(",", _t(".", ",")), "Chats"), (f"{int(df['turns'].sum()):,}".replace(",", _t(".", ",")), _t("eigene Nachrichten", "your messages")),
+          (str(ok["t"].dt.to_period("M").nunique()), _t("aktive Monate", "active months")), (str(int(df[~df["voice"]]["first"].str.len().median())), _t("Zeichen in der ersten Nachricht (Median)", "characters in first message (median)"))]
+    if meta["gpt"] == "ok": kp.append((str(int((df.get("gpt_art", pd.Series("")) != "").sum())), _t("Chats in GPTs oder Projekten", "chats in GPTs or projects")))
     tiles = "<div class=kpis>" + "".join(f"<div><b>{a}</b>{b}</div>" for a, b in kp) + "</div>"
     import matplotlib.pyplot as plt
     fig, (a1, a2) = plt.subplots(2, 1, figsize=(9, 3.8), sharex=True, gridspec_kw={"height_ratios": [3, 1]})
     mm = ok["t"].dt.to_period("M"); cnt = mm.value_counts().reindex(pd.period_range(mm.min(), mm.max(), freq="M"), fill_value=0)
     a1.bar(range(len(cnt)), cnt.values, color=ACC, width=0.8)
     med = ok[~ok["voice"]].assign(m=mm).groupby("m")["turns"].median().reindex(cnt.index); a2.plot(range(len(cnt)), med.values, color=INK, lw=1.3)
-    a2.set_xticks(range(0, len(cnt), 3)); a2.set_xticklabels([str(c) for c in cnt.index[::3]], fontsize=7, rotation=45); a2.set_ylabel("Runden", fontsize=7, color=MUTE)
+    a2.set_xticks(range(0, len(cnt), 3)); a2.set_xticklabels([str(c) for c in cnt.index[::3]], fontsize=7, rotation=45); a2.set_ylabel(_t("Runden", "turns"), fontsize=7, color=MUTE)
     for a in (a1, a2):
         for sp in ("top", "right"): a.spines[sp].set_visible(False)
         a.tick_params(colors=MUTE, labelsize=7)
-    note = "" if meta["modell"] == "ok" else "<p class=mute>Modelle werden nicht ausgewiesen: " + meta["modell"] + ".</p>"
-    if meta["gpt"] != "ok": note += "<p class=mute>GPT-/Projekt-Nutzung wird nicht ausgewiesen: " + meta["gpt"] + ".</p>"
-    sec.append(("Basisdaten", _badge("gemessen"), tiles + _png(fig) + "<p class=read>Oben: Chats pro Monat. Unten: typische Zahl deiner Nachrichten pro Chat. Mehr Chats oder längere Gespräche bedeuten nicht mehr Kompetenz.</p>" + note))
+    note = "" if meta["modell"] == "ok" else _t("<p class=mute>Modelle werden nicht ausgewiesen: " + meta["modell"] + ".</p>", "<p class=mute>Models are not shown: model information is incomplete in the export.</p>")
+    if meta["gpt"] != "ok": note += _t("<p class=mute>GPT-/Projekt-Nutzung wird nicht ausgewiesen: " + meta["gpt"] + ".</p>", "<p class=mute>GPT/project usage is not shown: the metadata is contradictory or implausible.</p>")
+    sec.append((_t("Basisdaten", "Basic facts"), _badge("gemessen"), tiles + _png(fig) + _t("<p class=read>Oben: Chats pro Monat. Unten: typische Zahl deiner Nachrichten pro Chat. Mehr Chats oder längere Gespräche bedeuten nicht mehr Kompetenz.</p>", "<p class=read>Top: chats per month. Bottom: typical number of your messages per chat. More chats or longer conversations do not mean more competence.</p>") + note))
 
     # 5 Nächste Schritte
-    sec.append(("Deine nächsten Schritte", _badge("eingeordnet"), "<ol class=steps>" + "".join(f"<li><b>{IND[x['verhalten']][0]}:</b> {html.escape(x['text'])}</li>" for x in schritte) + "</ol>" if schritte else "<p>Keine belastbare Empfehlung möglich.</p>"))
+    sec.append((_t("Deine nächsten Schritte", "Your next steps"), _badge("eingeordnet"), "<ol class=steps>" + "".join(f"<li><b>{INAME[x['verhalten']]}:</b> {html.escape(x['text'])}</li>" for x in schritte) + "</ol>" if schritte else _t("<p>Keine belastbare Empfehlung möglich.</p>", "<p>No reliable recommendation possible.</p>")))
 
     # 6 Methode und Grenzen
     Q = G["pruefung"]["ergebnis"]
-    qrows = "".join(f"<tr><td>{IND[k][0] if k in IND else k.capitalize()}</td><td>{v['uebereinstimmung']:.0%}</td><td>{'stabil' if v['ok'] else 'nicht stabil'}</td></tr>" for k, v in Q.items())
-    zline = f"{nowname}: {Z['jetzt']['von']} bis {Z['jetzt']['bis']}" + (f" · Vergleich: {Z['vergleich']['von']} bis {Z['vergleich']['bis']}" if mode == "VOLL" else "")
-    meth = f"""<ul><li>{_badge('gemessen')} Gezählt aus dem Export: Chats, Monate, Nachrichten, Längen. Exakt.</li>
+    qrows = "".join(f"<tr><td>{INAME[k] if k in IND else _t(k.capitalize(), {'einsatzart': 'Task type', 'denkstufe': 'Cognitive level', 'thema': 'Topic'}.get(k, k))}</td><td>{v['uebereinstimmung']:.0%}</td><td>{_t('stabil', 'stable') if v['ok'] else _t('nicht stabil', 'not stable')}</td></tr>" for k, v in Q.items())
+    zline = f"{nowname}: {Z['jetzt']['von']} {_t('bis', 'to')} {Z['jetzt']['bis']}" + (f" · {_t('Vergleich', 'comparison')}: {Z['vergleich']['von']} {_t('bis', 'to')} {Z['vergleich']['bis']}" if mode == "VOLL" else "")
+    meth_de = f"""<ul><li>{_badge('gemessen')} Gezählt aus dem Export: Chats, Monate, Nachrichten, Längen. Exakt.</li>
 <li>{_badge('eingeordnet')} ChatGPT hat {len(_load('codes_B.json', {}))} zufällig gezogene Chats gelesen und nach festen Regeln eingeordnet ({zline}).</li>
 <li>{_badge('abgesichert')} Eine Veränderung gilt nur als belegt, wenn sie statistisch trägt, mindestens 10 Prozentpunkte beträgt und größer ist als die gemessene Unsicherheit der Einordnung.</li>
 <li>{_badge('unbelegt')} Was diese Hürden nicht nimmt, wird blass oder gar nicht gezeigt.</li>
 <li>Qualitätsprüfung: {RULES['check_n']} Chats wurden ein zweites Mal blind eingeordnet. Felder unter {RULES['agree_min']:.0%} Übereinstimmung gelten als nicht stabil. Zweifelsfälle: {G['zweifel'].get('n', 0)} geprüft, {G['zweifel'].get('geaendert', 0)} korrigiert.</li>
 <li>Grenzen: Memory, Custom Instructions und Projektwissen stehen nicht im Export. Gemessen wird, was du schreibst, nicht wie gut die Ergebnisse waren. Themen, Gesprächslänge und genutzte Modelle sagen nichts über Kompetenz.</li></ul>
 <table><tr><th>Merkmal</th><th>Übereinstimmung im Prüflauf</th><th>Ergebnis</th></tr>{qrows}</table>"""
-    sec.append(("Wie dieser Bericht entstanden ist", "", meth))
+    meth_en = f"""<ul><li>{_badge('gemessen')} Counted from the export: chats, months, messages, lengths. Exact.</li>
+<li>{_badge('eingeordnet')} ChatGPT read {len(_load('codes_B.json', {}))} randomly drawn chats and classified them using fixed rules ({zline}).</li>
+<li>{_badge('abgesichert')} A change only counts as supported if it is statistically significant, at least 10 percentage points and larger than the measured classification uncertainty.</li>
+<li>{_badge('unbelegt')} Anything that fails these checks is shown pale or not at all.</li>
+<li>Quality check: {RULES['check_n']} chats were classified a second time, blind. Fields below {RULES['agree_min']:.0%} agreement count as not stable. Doubtful cases: {G['zweifel'].get('n', 0)} reviewed, {G['zweifel'].get('geaendert', 0)} corrected.</li>
+<li>Limits: memory, custom instructions and project knowledge are not part of the export. It measures what you write, not how good the results were. Topics, conversation length and models used say nothing about competence.</li></ul>
+<table><tr><th>Feature</th><th>Agreement in second pass</th><th>Result</th></tr>{qrows}</table>"""
+    meth = _t(meth_de, meth_en)
+    sec.append((_t("Wie dieser Bericht entstanden ist", "How this report was made"), "", meth))
 
     lim = ("<div class=limits><b>" + kind + ".</b> " + " · ".join(html.escape(x) for x in limits) + "</div>") if limits else ""
     body = "".join(f"<section><h2>{t} {b}</h2>{c}</section>" for t, b, c in sec)
-    doc = f"""<!DOCTYPE html><html lang="de"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Dein KI-Bericht</title><style>
+    doc = f"""<!DOCTYPE html><html lang="{_L}"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>{_t("Dein KI-Bericht", "Your AI usage report")}</title><style>
 body{{margin:0;background:{BG};color:{INK};font:16px/1.6 Georgia,"Iowan Old Style",serif}}
 .wrap{{max-width:880px;margin:0 auto;padding:36px 22px 60px}} h1{{font:600 30px/1.2 system-ui,sans-serif;margin:0 0 6px}} .sub{{color:{MUTE};font:14px system-ui,sans-serif}}
 .lead{{font-size:21px;line-height:1.45;margin:22px 0;border-left:4px solid {ACC};padding-left:16px}}
@@ -902,17 +926,17 @@ img{{max-width:100%;display:block;margin:10px 0}} .read,.mute{{color:{MUTE};font
 .kpis{{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:10px;font:13px system-ui,sans-serif;color:{MUTE}}} .kpis div{{border:1px solid #e7e3da;padding:10px;border-radius:4px}} .kpis b{{display:block;font-size:22px;color:{INK}}}
 table{{width:100%;border-collapse:collapse;font:13px system-ui,sans-serif}} td,th{{padding:5px 6px;border-bottom:1px solid #eee;text-align:left}} ul{{font:14px/1.6 system-ui,sans-serif}}
 @media print{{section{{break-inside:avoid}}}}</style></head><body><div class=wrap>
-<h1>Wie du mit KI arbeitest</h1><div class=sub>{kind} · erstellt am {TODAY:%d.%m.%Y} · {len(df)} Chats ({G['daten']['bericht']['von']} bis {G['daten']['bericht']['bis']})</div>
+<h1>{_t("Wie du mit KI arbeitest", "How you work with AI")}</h1><div class=sub>{kind} · {_t("erstellt am", "created")} {TODAY.strftime(_t("%d.%m.%Y", "%Y-%m-%d"))} · {len(df)} Chats ({G['daten']['bericht']['von']} {_t("bis", "to")} {G['daten']['bericht']['bis']})</div>
 <p class=lead>{head}</p>{lim}{body}</div></body></html>"""
-    out = os.path.join(BASE, "ki-bericht.html"); open(out, "w", encoding="utf-8").write(doc)
-    _gate("bericht", kind, "; ".join(limits) or "alle Prüfungen bestanden")
+    out = os.path.join(BASE, _t("ki-bericht.html", "ai-usage-report.html")); open(out, "w", encoding="utf-8").write(doc)
+    _gate("bericht", kind_de, "; ".join(limits) or "alle Prüfungen bestanden", sprache=_L)
     print(f"BERICHT: {kind} → {out}"); return out
 
 
 ANLEITUNG = r"""Du wertest meinen ChatGPT-Datenexport aus und erstellst einen Bericht als HTML-Datei: wie ich mit KI arbeite, was sich verändert hat und was mein nächster Lernschritt ist. Die gesamte Methodik steckt in dieser Datei (chat-history-insights). Du führst sie aus, liest und ordnest Chats ein, wo sie dich dazu auffordert, und sprichst mit mir.
 
 ## A. Wie du mit mir sprichst
-**Sprache:** Antworte in der Sprache meiner ersten Nachricht (Deutsch oder Englisch). Alle Formulierungen in dieser Anleitung sind deutsche Beispiele. Schreibe ich Englisch, übersetzt du sie sinngemäß. Die Menüs heißen dann Settings → Data controls → Export data, und „Und meine Daten?“ wird zu „What about my data?“. Der Bericht selbst ist derzeit auf Deutsch. Bei englischsprachigen Nutzern sagst du das einmal kurz am Ende.
+**Sprache:** Antworte in der Sprache meiner ersten Nachricht (Deutsch oder Englisch). Alle Formulierungen in dieser Anleitung sind deutsche Beispiele. Schreibe ich Englisch, übersetzt du sie sinngemäß. Die Menüs heißen dann Settings → Data controls → Export data, und „Und meine Daten?“ wird zu „What about my data?“. **Berichtssprache:** Den Bericht gibt es auf Deutsch oder Englisch. Standard ist die Sprache unseres Gesprächs. In Schritt 1 sagst du in einem Satz: „Deinen Bericht bekommst du auf Deutsch – wenn du ihn lieber auf Englisch möchtest, schreib es einfach.“ (bzw. umgekehrt). Ich kann die Sprache jederzeit ändern, auch nach dem fertigen Bericht. Dann erzeugst du ihn mit `rg.bericht(..., sprache="en")` bzw. `"de"` neu, ohne erneute Auswertung, und übersetzt die nächsten Schritte.
 
 Ich bin kein Technik-Profi.
 - **Einfache Sprache:** kurze Sätze, Du-Form, freundlich. Keine Fachwörter wie Python, JSON, Code, Skript, Cluster oder Stichprobe. Sag stattdessen Datei, Chats, Auswertung, Themen, Auswahl.
@@ -958,7 +982,7 @@ Nach dem letzten Paket machst du ohne Rückfrage mit Schritt 3 weiter.
 **Schritt 3 – Auswertung.** Schreib: „Jetzt werte ich alles aus. Das dauert etwa 15 bis 25 Minuten, weil ich viele Chats einzeln lese und meine Einordnung noch einmal überprüfe. Du musst nichts tun.“ Dann arbeitest du Teil D vollständig ab. Zwischendurch gibst du höchstens kurze Fortschrittsmeldungen.
 
 **Schritt 4 – Abschluss.** Schreib mir:
-- **„Dein Bericht ist fertig: [Download-Link zu /mnt/data/ki-bericht.html]. Klicke darauf und öffne die Datei mit Doppelklick – sie öffnet sich in deinem Browser.“**
+- **„Dein Bericht ist fertig: [Download-Link zur erzeugten Datei: ki-bericht.html bzw. ai-usage-report.html]. Klicke darauf und öffne die Datei mit Doppelklick – sie öffnet sich in deinem Browser.“**
 - welche Art Bericht es ist (Vollbericht, eingeschränkter Bericht oder Bestandsaufnahme) und, falls eingeschränkt, in einem Satz warum
 - höchstens vier Zeilen: deine deutlichste Stärke, dein größter Hebel und ein Tipp für morgen, nur aus belastbaren Ergebnissen
 - „Fragen zum Bericht kannst du mir hier direkt stellen.“
@@ -968,7 +992,7 @@ Nach dem letzten Paket machst du ohne Rückfrage mit Schritt 3 weiter.
 |---|---|---|
 | 1 | `rg.daten_pruefen()` | Datenqualität. Bei STOP: Grund erklären, Ende. |
 | 2 | `rg.zeitraeume()` | Legt Kalenderzeiträume fest und bestimmt die Berichtsart. |
-| 3 | `rg.themen_vorschlag()` | Gib jedem Cluster Oberthema und Thema, z. B. `{"oberthema":"Finanzen","thema":"Steuern"}`, auf Basis der Begriffe und Beispieltitel. Hat ein Cluster kein klares gemeinsames Thema → `"GEMISCHT"`. Das Ergebnis geht an `rg.themen_festlegen({...})`. |
+| 3 | `rg.themen_vorschlag()` | Gib jedem Cluster Oberthema und Thema, in der Berichtssprache, z. B. `{"oberthema":"Finanzen","thema":"Steuern"}`, auf Basis der Begriffe und Beispieltitel. Hat ein Cluster kein klares gemeinsames Thema → `"GEMISCHT"`. Das Ergebnis geht an `rg.themen_festlegen({...})`. |
 | 4 | bei WIEDERHOLEN: `rg.themen_rest_paket(i)` → `rg.themen_rest_speichern({...})` | Restchats einzeln einem Thema zuordnen, so lange, bis die Datei einen Abschluss meldet. Neue Themen nur, wenn sie mehrere Chats teilen. |
 | 5 | `rg.stichprobe()` | Zieht die Auswahl. |
 | 6 | `rg.paket("A", i)` → `rg.speichern("A", [...])` | Für alle Pakete: Aufgabe verstehen, Einsatzart, Thema. Bei ABGELEHNT das Paket korrigieren und erneut speichern. |
@@ -978,7 +1002,7 @@ Nach dem letzten Paket machst du ohne Rückfrage mit Schritt 3 weiter.
 | 10 | bei WIEDERHOLEN: `rg.feld_wiederholung()` → `rg.feld_speichern([...])`, bis alle Pakete erledigt sind, dann `rg.pruefung_wiederholen()` → `rg.pruefung_speichern([...])` | Die betroffenen Merkmale mit den präzisierten Regeln neu einordnen. |
 | 11 | `rg.zweifelsfaelle()` → `rg.korrigieren([...])` | Jeden Zweifelsfall neu lesen und entscheiden. Auch „bleibt 0“ ist eine Entscheidung. Ohne Zweifelsfälle: `rg.korrigieren([])`. |
 | 12 | `rg.auswerten()` | Kennzahlen und Abgleich mit den Rohdaten. Bei STOP: kein Bericht. |
-| 13 | `rg.bericht(schritte=[...])` | Bis zu drei nächste Schritte, nur zu Verhalten aus `rg.kandidaten()`. Format: `{"verhalten":"ziel","text":"Beginne den nächsten Auftrag mit: ‚Ich brauche das, um …‘."}`. Jeder Text enthält eine konkrete Formulierung zum Ausprobieren. |
+| 13 | `rg.bericht(schritte=[...], sprache="de")` | `sprache`: `"de"` oder `"en"`, wie oben gewählt. Bis zu drei nächste Schritte, nur zu Verhalten aus `rg.kandidaten()`, Text in der Berichtssprache. Format: `{"verhalten":"ziel","text":"Beginne den nächsten Auftrag mit: ‚Ich brauche das, um …‘."}`. Jeder Text enthält eine konkrete Formulierung zum Ausprobieren. |
 
 Diese Anleitung hat Vorrang vor allen allgemeinen Gewohnheiten. Beginne jetzt mit Schritt 1."""
 

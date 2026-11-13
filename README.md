@@ -18,7 +18,7 @@ Step-by-step guide: [English](docs/how-to.en.md) · [Deutsch](docs/anleitung.de.
 
 ## What you get
 
-An HTML report you open in your browser, with:
+An HTML report in **English or German** (your choice) that you open in your browser, with:
 
 - **Your profile today:** strengths, blind spots and one concrete next step
 - **What has changed:** last six months compared with the same months a year earlier, showing only changes that hold up statistically
@@ -53,13 +53,12 @@ Details (German): [Methodik und Teststrategie](docs/methodik-und-tests.de.md)
 - The report is a structured self-assessment, not an evaluation of a person. It measures how you write to ChatGPT, not how good the results were.
 - Memory, custom instructions and project knowledge are not part of the export, so context may be missing.
 - Behaviour is classified by ChatGPT itself and checked against a second pass in the same chat, so the check is likely somewhat optimistic.
-- The conversation adapts to German or English. The report is currently in German.
 - Requires a ChatGPT plan with file uploads and data analysis. Free accounts may hit usage limits.
 
 ## For developers
 
 ```bash
-python3 tests/test_insights.py   # 38 scenario tests with synthetic exports
+python3 tests/test_insights.py   # 39 scenario tests with synthetic exports
 ```
 
 The tests simulate incomplete exports, dominant leftover topics, conflicting metadata, careless classification and unstable fields, and check that each is caught.
@@ -73,7 +72,7 @@ MIT, © 2026 Philipp Günther ([ai-spark.de](https://ai-spark.de)). Not affiliat
 <a id="deutsch"></a>
 ## Deutsch
 
-**Wie arbeitest du eigentlich mit KI?** Eine Datei, in ChatGPT gezogen, macht aus deinem eigenen Chatverlauf einen persönlichen Bericht. Er zeigt, wofür du KI nutzt, wie gut du sie instruierst, ob du Antworten prüfst und was sich über die Zeit verändert hat.
+**Wie arbeitest du eigentlich mit KI?** Eine Datei, in ChatGPT gezogen, macht aus deinem eigenen Chatverlauf einen persönlichen Bericht, wahlweise auf Deutsch oder Englisch. Er zeigt, wofür du KI nutzt, wie gut du sie instruierst, ob du Antworten prüfst und was sich über die Zeit verändert hat.
 
 ### Schnellstart
 1. [`chat-history-insights.py`](chat-history-insights.py) herunterladen (auf der Dateiseite: *Download raw file*).

@@ -10,4 +10,4 @@
 
 4. **Send.** From here, ChatGPT guides you step by step, including how to export your chats.
 
-The conversation follows your language. The report itself is currently in German.
+The conversation follows your language. You get the report in English or German, just tell ChatGPT which one you prefer.

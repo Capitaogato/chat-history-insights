@@ -100,6 +100,10 @@ def t_normal():
     R = json.load(open(rg.P("ergebnis.json")))
     check("Normal: Veränderung 'Ziel' abgesichert (wahre Zunahme)", R["veraenderung"]["ziel"]["klasse"] == "abgesichert", str(R["veraenderung"]["ziel"]))
     check("Normal: Reifegrad als Spanne vorhanden", R["reifegrad"] is not None)
+    en, _ = quiet(rg.bericht, [], sprache="en"); txt = open(en, encoding="utf-8").read()
+    import re
+    leftover = set(re.findall(r">[^<]*[äöüÄÖÜß][^<]*<", txt))
+    check("Englischer Bericht ohne deutsche Reste", en.endswith("ai-usage-report.html") and not leftover, str(list(leftover)[:3]))
     return out
 
 def t_files():
