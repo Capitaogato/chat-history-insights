@@ -31,7 +31,7 @@ Gesprächslänge, Themen und genutzte Modelle gehen nicht in den Reifegrad ein. 
 
 ## 3. Automatisierte Szenario-Tests
 
-`python3 tests/test_insights.py` erzeugt künstliche Exporte mit bekannter Wahrheit und simuliert die Einordnung durch ChatGPT, auch absichtlich fehlerhaft. Aktueller Stand: **39 von 39 Prüfungen bestanden.**
+`python3 tests/test_insights.py` erzeugt künstliche Exporte mit bekannter Wahrheit und simuliert die Einordnung durch ChatGPT, auch absichtlich fehlerhaft. Aktueller Stand: **43 von 43 Prüfungen bestanden.**
 
 | Szenario | Was geprüft wird |
 |---|---|

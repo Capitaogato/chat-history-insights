@@ -271,6 +271,10 @@ def begruessung(sprache="de"):
     u = _ui(); u["sprache"] = "en" if str(sprache).lower().startswith("en") else "de"; _save("ui.json", u)
     _say(GRUSS[u["sprache"]])
 
+def luecke_bestaetigt():
+    """Nutzer bestätigt, dass die Datenlücke echt ist (keine Dateien vergessen)."""
+    u = _ui(); u["luecke_bestaetigt"] = True; _save("ui.json", u); print("Bestätigt – weiter mit rg.zeitraeume().")
+
 def sprache_setzen(sprache):
     """Wenn der Nutzer die Sprache von Gespräch/Bericht wechselt."""
     u = _ui(); u["sprache"] = "en" if str(sprache).lower().startswith("en") else "de"; _save("ui.json", u); print("Sprache:", u["sprache"])
@@ -339,7 +343,12 @@ def daten_pruefen():
     age = (TODAY - ok["t"].max()).days; rep["tage_seit_letztem_chat"] = int(age)
     if age > RULES["current_days"]: issues.append(f"letzter Chat ist {age} Tage alt – keine Aussagen über die heutige Nutzung")
     last12 = cnt[cnt.index > last - 12]
-    if (last12 == 0).sum() >= 2: issues.append("Lücken von mindestens zwei Monaten in den letzten zwölf Monaten")
+    gap12 = (last12 == 0).sum() >= 2
+    if gap12: issues.append("Lücken von mindestens zwei Monaten in den letzten zwölf Monaten")
+    dense = cnt[cnt >= 5]; last_dense = dense.index.max() if len(dense) else last
+    tail = (pd.Period(TODAY, "M") - last_dense).n
+    rep["dicht_bis"] = str(last_dense)
+    if tail >= 3: issues.append(f"Nach {last_dense.strftime('%m/%Y')} kaum noch Chats im Export")
     # Metadaten: nur nutzen, was belegt und widerspruchsfrei ist
     meta = {}
     cov = (df["model_src"] == "nachricht").mean(); meta["modell"] = "ok" if cov >= 0.8 else f"nur {cov:.0%} belegt – nicht auswerten"
@@ -360,9 +369,14 @@ def daten_pruefen():
     rep["auswertbar"] = len(usable)
     if len(usable) < RULES["min_chats"]:
         level = "STOP"; issues.append(f"nur {len(usable)} auswertbare Chats – Mindestens {RULES['min_chats']} nötig")
-    elif st.get("defekt") or bad.mean() > 0.05: level = "WARN"
+    elif st.get("defekt") or bad.mean() > 0.05 or gap12 or tail >= 3: level = "WARN"
     else: level = "OK"
     _gate("daten", level, "; ".join(issues) or "vollständig und plausibel", bericht=rep)
+    if level != "STOP" and tail >= 3 and not _ui().get("luecke_bestaetigt"):
+        en = _ui()["sprache"] == "en"; mo = (last_dense + 1).strftime("%m/%Y")
+        _say(f"One quick check: your export contains hardly any chats from {mo} onwards. Is that right – did you use ChatGPT less, or a different account?\n\n👉 **If you still have conversations files that you haven't uploaded, drag them in now. Otherwise just reply \"That's right\".**"
+             if en else f"Kurze Rückfrage: In deinem Export sind ab {mo} kaum noch Chats. Stimmt das – hast du ChatGPT seitdem weniger oder mit einem anderen Konto genutzt?\n\n👉 **Falls du noch conversations-Dateien hast, die du nicht hochgeladen hast, zieh sie jetzt hier rein. Sonst antworte einfach „Stimmt so“.**")
+        print("RÜCKFRAGE AN DEN NUTZER: Text oben wörtlich ausgeben und auf die Antwort warten. Neue Dateien → rg.einlesen(), danach rg.daten_pruefen(). „Stimmt so“ → rg.luecke_bestaetigt(), dann weiter mit rg.zeitraeume().")
     print(json.dumps({"stufe": level, "probleme": issues, **{k: rep[k] for k in ("chats", "auswertbar", "von", "bis", "doppelt", "zeit_unplausibel", "tage_seit_letztem_chat", "metadaten")}}, ensure_ascii=False, indent=1, default=_jd))
     return level
 
@@ -377,11 +391,18 @@ def zeitraeume():
     s = _need("daten")
     if s["gates"]["daten"]["stufe"] == "STOP": raise RuntimeError("Datenprüfung nicht bestanden – keine Auswertung möglich.")
     df = _df(); df = df[df["zeit_ok"] & ~df["voice"] & (df["first"].str.len() >= 20)]
-    L = df["t"].max().to_period("M"); n = RULES["period_months"]; out = {}
-    current = bool((TODAY - df["t"].max()).days <= RULES["current_days"])
-    a, b = L - (n - 1), L; ok, cnt = _window_ok(df, a, b)
-    if not ok:  # auf 12 Monate ausweiten
-        a = L - 11; ok, cnt = _window_ok(df, a, b)
+    L = df["t"].max().to_period("M"); F = df["t"].min().to_period("M"); n = RULES["period_months"]; out = {}
+    a = b = None; ok = False; cnt = 0
+    mc = df["t"].dt.to_period("M").value_counts()
+    anchors = sorted([p for p, c in mc.items() if c >= 3], reverse=True)   # Zeitraum endet in einem Monat mit echter Nutzung
+    for width in (n, 12):                         # jüngster dichter Zeitraum – notfalls vor einer dünnen Endphase
+        for anchor in anchors:
+            if anchor - (width - 1) < F: break
+            a, b = anchor - (width - 1), anchor; ok, cnt = _window_ok(df, a, b)
+            if ok: break
+        if ok: break
+    if not ok: a, b = L - (n - 1), L
+    current = bool(ok and (pd.Period(TODAY, "M") - b).n <= 2)
     out["jetzt"] = {"von": str(a), "bis": str(b), "chats": cnt, "tragfaehig": ok,
                     "name": "heute" if current else f"zuletzt ({a.strftime('%m/%Y')}–{b.strftime('%m/%Y')})", "aktuell": current}
     comp = None
@@ -396,9 +417,9 @@ def zeitraeume():
                 ca += 1
     out["vergleich"] = comp
     if not ok: mode, why = "BESTAND", "kein Zeitraum mit genug Chats – nur Bestandsaufnahme über alle Daten"
-    elif not current: mode, why = "BESTAND", "Daten nicht aktuell – keine Aussage über heute"
     elif comp is None: mode, why = "OHNE_VERGLEICH", "kein tragfähiger Vergleichszeitraum – keine Entwicklungsaussagen"
     else: mode, why = "VOLL", "beide Zeiträume tragfähig"
+    if ok and not current: why += f"; jüngster tragfähiger Zeitraum endet {b.strftime('%m/%Y')} – Stand dieses Zeitpunkts, keine Aussage über heute"
     out["modus"] = mode
     _gate("zeitraeume", mode, why, **out); print(json.dumps(out, ensure_ascii=False, indent=1, default=_jd)); return out
 
@@ -804,7 +825,7 @@ def auswerten():
         idx[name] = {"wert": pt, "unten": float(np.nanpercentile(boots, 2.5)), "oben": float(np.nanpercentile(boots, 97.5)), "felder": use}
     res["indizes"] = idx
     stage = None
-    if G["zeitraeume"]["jetzt"]["aktuell"] and G["zeitraeume"]["modus"] != "BESTAND" and all(idx.values()):
+    if G["zeitraeume"]["modus"] != "BESTAND" and all(idx.values()):
         def band(v): return 0 if v < 0.2 else (1 if v < 0.4 else 2)
         lo = (band(idx["prompt"]["unten"]), band(idx["kritisch"]["unten"])); hi = (band(idx["prompt"]["oben"]), band(idx["kritisch"]["oben"]))
         stage = {"unten": lo, "oben": hi, "eindeutig": lo == hi}
@@ -887,7 +908,9 @@ def bericht(schritte, sprache=None):
     nowname = _pname(Z["jetzt"]["name"]) if mode != "BESTAND" else _t("Gesamtzeitraum", "whole period"); cmpname = _pname((Z.get("vergleich") or {}).get("name", ""))
     limits = []
     if G["daten"]["stufe"] != "OK": limits.append(_t("Daten: " + G["daten"]["grund"], "Data: some files could not be read, or dates are missing or implausible"))
-    if mode != "VOLL": limits.append(_t("Zeiträume: " + G["zeitraeume"]["grund"], {"OHNE_VERGLEICH": "Time: no reliable comparison period, so no statements about change", "BESTAND": "Time: data is not current or too sparse, so no statements about today"}.get(mode, "")))
+    stand = "" if Z["jetzt"]["aktuell"] or mode == "BESTAND" else pd.Period(Z["jetzt"]["bis"]).strftime("%m/%Y")
+    if stand: limits.append(_t(f"Zeitraum: Deine Daten reichen nur bis {stand} dicht genug. Der Bericht beschreibt den Stand von damals, nicht heute.", f"Time: your data is only dense enough up to {stand}. The report describes your situation at that time, not today."))
+    if mode != "VOLL": limits.append(_t("Zeiträume: " + G["zeitraeume"]["grund"], {"OHNE_VERGLEICH": "Time: no reliable comparison period, so no statements about change", "BESTAND": "Time: no period has enough chats, so this is an inventory only"}.get(mode, "")))
     if G["themen"]["stufe"] in ("WARN", "NICHT_BELASTBAR"): limits.append(_t("Themen: " + G["themen"]["grund"], f"Topics: {G['themen']['rest']:.0%} of chats could not be assigned to a topic"))
     nb = [INAME[k] if k in IND else _t(k, {"einsatzart": "task type", "denkstufe": "cognitive level", "thema": "topic"}.get(k, k)) for k, v in rel.items() if not v]
     if nb: limits.append(_t("Nicht stabil messbar: ", "Not measured reliably: ") + ", ".join(nb))
@@ -904,6 +927,7 @@ def bericht(schritte, sprache=None):
         head = _t(f"Du beschreibst Aufträge <b>{rng_(p0, p1, names[0])}</b> präzise und prüfst Ergebnisse <b>{rng_(k0, k1, names[1])}</b> kritisch.",
                   f"You <b>{rng_(p0, p1, names[0])}</b> brief the AI precisely and <b>{rng_(k0, k1, names[1])}</b> check its results critically.") \
                + ("" if stg["eindeutig"] else _t(" Die Daten erlauben nur eine Spanne, keine genaue Einstufung.", " The data only allows a range, not an exact level."))
+        if stand: head = _t(f"Stand {stand}: ", f"As of {stand}: ") + head
     else:
         head = _t("Für eine Gesamteinschätzung deines Reifegrads reichen die Daten nicht. Der Bericht zeigt, was sich belastbar sagen lässt.", "The data is not sufficient for an overall assessment. This report shows what can be said reliably.")
 
@@ -997,7 +1021,8 @@ def bericht(schritte, sprache=None):
 
     # 6 Methode und Grenzen
     Q = G["pruefung"]["ergebnis"]
-    qrows = "".join(f"<tr><td>{INAME[k] if k in IND else _t(k.capitalize(), {'einsatzart': 'Task type', 'denkstufe': 'Cognitive level', 'thema': 'Topic'}.get(k, k))}</td><td>{v['uebereinstimmung']:.0%}</td><td>{_t('stabil', 'stable') if v['ok'] else _t('nicht stabil', 'not stable')}</td></tr>" for k, v in Q.items())
+    qrows = "".join(f"<tr><td>{INAME[k] if k in IND else _t(k.capitalize(), {'einsatzart': 'Task type', 'denkstufe': 'Cognitive level', 'thema': 'Topic'}.get(k, k))}</td><td>{v['uebereinstimmung']:.0%}</td><td>{(_t('stabil', 'stable') if rel.get(k, True) else _t('stabil, aber hängt an der Einsatzart – nicht verwendet', 'stable, but tied to task type – not used') if k == 'denkstufe' else _t('stabil, aber zu oft unklar – nicht verwendet', 'stable, but too often unclear – not used')) if v['ok'] else _t('nicht stabil', 'not stable')}</td></tr>" for k, v in Q.items())
+    if mode == "BESTAND": Z = {**Z, "jetzt": {**Z["jetzt"], "von": G["daten"]["bericht"]["von"], "bis": G["daten"]["bericht"]["bis"]}}
     zline = f"{nowname}: {Z['jetzt']['von']} {_t('bis', 'to')} {Z['jetzt']['bis']}" + (f" · {_t('Vergleich', 'comparison')}: {Z['vergleich']['von']} {_t('bis', 'to')} {Z['vergleich']['bis']}" if mode == "VOLL" else "")
     meth_de = f"""<ul><li>{_badge('gemessen')} Gezählt aus dem Export: Chats, Monate, Nachrichten, Längen. Exakt.</li>
 <li>{_badge('eingeordnet')} ChatGPT hat {len(_load('codes_B.json', {}))} zufällig gezogene Chats gelesen und nach festen Regeln eingeordnet ({zline}).</li>
@@ -1079,7 +1104,7 @@ Nach **jedem** Paket rufst du `rg.einlesen()` auf. Deine Antwort an mich ist **n
 ## D. Interner Ablauf (Funktionen in dieser Datei, in dieser Reihenfolge)
 | Nr. | Aufruf | Was du tust |
 |---|---|---|
-| 1 | `rg.daten_pruefen()` | Datenqualität. Bei STOP: Grund erklären, Ende. |
+| 1 | `rg.daten_pruefen()` | Datenqualität. Bei STOP: Grund erklären, Ende. Gibt die Funktion eine RÜCKFRAGE aus, zeigst du mir den Text zwischen den Markern wörtlich und wartest auf meine Antwort. |
 | 2 | `rg.zeitraeume()` | Legt Kalenderzeiträume fest und bestimmt die Berichtsart. |
 | 3 | `rg.themen_vorschlag()` | Gib jedem Cluster Oberthema und Thema, in der Berichtssprache, z. B. `{"oberthema":"Finanzen","thema":"Steuern"}`, auf Basis der Begriffe und Beispieltitel. Hat ein Cluster kein klares gemeinsames Thema → `"GEMISCHT"`. Das Ergebnis geht an `rg.themen_festlegen({...})`. |
 | 4 | bei WIEDERHOLEN: `rg.themen_rest_paket(i)` → `rg.themen_rest_speichern({...})` | Restchats einzeln einem Thema zuordnen, so lange, bis die Datei einen Abschluss meldet. Neue Themen nur, wenn sie mehrere Chats teilen. |

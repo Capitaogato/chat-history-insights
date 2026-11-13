@@ -60,7 +60,7 @@ Details (German): [Methodik und Teststrategie](docs/methodik-und-tests.de.md)
 ## For developers
 
 ```bash
-python3 tests/test_insights.py   # 39 scenario tests with synthetic exports
+python3 tests/test_insights.py   # 43 scenario tests with synthetic exports
 ```
 
 The tests simulate incomplete exports, dominant leftover topics, conflicting metadata, careless classification and unstable fields, and check that each is caught.

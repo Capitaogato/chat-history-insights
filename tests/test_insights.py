@@ -119,7 +119,19 @@ def t_files():
 
 def t_old_export():
     rg, truth, d = fresh("alt", end=(2025, 12)); quiet(rg.einlesen); quiet(rg.daten_pruefen); z, _ = quiet(rg.zeitraeume)
-    check("Veralteter Export: kein 'heute'", z["jetzt"]["aktuell"] is False and z["modus"] == "BESTAND", z["jetzt"]["name"])
+    check("Veralteter Export: kein 'heute', sondern 'zuletzt'", z["jetzt"]["aktuell"] is False and z["jetzt"]["name"].startswith("zuletzt"), z["jetzt"]["name"])
+
+def t_tail():
+    rg, truth, d = fresh("tail", start=(2023, 1), end=(2025, 6), n=1000)
+    extra = fixtures.make(d + "/x", start=(2026, 5), end=(2026, 6), n=6, files=1, seed=9)
+    os.rename(d + "/x/conversations-000.json", d + "/conversations-extra.json"); truth.update(extra)
+    json.dump(truth, open(os.path.join(d, "..", "truth.json"), "w"))
+    quiet(rg.einlesen); lvl, out = quiet(rg.daten_pruefen)
+    check("Dünne Endphase → WARN und Rückfrage an Nutzer", lvl == "WARN" and "RÜCKFRAGE" in out and "06/2025" in out or "07/2025" in out, rg.state()["gates"]["daten"]["grund"])
+    quiet(rg.luecke_bestaetigt); z, _ = quiet(rg.zeitraeume)
+    check("Dünne Endphase: Zeitraum endet vor der Lücke, Vergleich möglich", z["jetzt"]["bis"] == "2025-06" and z["modus"] == "VOLL" and not z["jetzt"]["aktuell"], json.dumps(z["jetzt"]))
+    out = pipeline_after_periods(rg, truth); h = open(out, encoding="utf-8").read()
+    check("Dünne Endphase: Bericht nennt Stand 06/2025 und ist eingeschränkt", "Stand 06/2025" in h and rg.state()["gates"]["bericht"]["stufe"] == "Eingeschränkter Bericht")
 
 def t_short():
     rg, truth, d = fresh("kurz", start=(2026, 2), n=500); quiet(rg.einlesen); quiet(rg.daten_pruefen); z, _ = quiet(rg.zeitraeume)
@@ -136,6 +148,7 @@ def pipeline_after_periods(rg, truth):
 
 def t_gap():
     rg, truth, d = fresh("luecke", gaps={(2026, m) for m in (3, 4, 5, 6, 7)}); quiet(rg.einlesen); lvl, out = quiet(rg.daten_pruefen)
+    check("Datenlücke → Datenprüfung WARN", lvl == "WARN")
     check("Datenlücke im letzten Jahr erkannt", "Lücken" in rg.state()["gates"]["daten"]["grund"], rg.state()["gates"]["daten"]["grund"])
     z, _ = quiet(rg.zeitraeume); check("Datenlücke: 'jetzt'-Zeitraum trotzdem nur mit genug Monaten", z["jetzt"]["tragfaehig"] in (True, False), json.dumps(z["jetzt"]))
 
@@ -230,7 +243,7 @@ def t_small():
     check("Nach STOP keine weitere Auswertung", ok)
 
 if __name__ == "__main__":
-    for t in [t_order, t_reset, t_small, t_files, t_meta, t_old_export, t_gap, t_short, t_rest, t_sonstiges, t_bloom, t_validation, t_unreliable_field, t_normal]:
+    for t in [t_order, t_reset, t_small, t_files, t_meta, t_old_export, t_tail, t_gap, t_short, t_rest, t_sonstiges, t_bloom, t_validation, t_unreliable_field, t_normal]:
         try: t()
         except Exception as e:
             import traceback; traceback.print_exc(); check(t.__name__ + " (Absturz)", False, repr(e))
