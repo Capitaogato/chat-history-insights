@@ -10,7 +10,7 @@ No installation, no account anywhere else, no data leaves ChatGPT.
 
 ## Quick start
 
-1. Download [`chat-history-insights.py`](chat-history-insights.py) (on the file page: *Download raw file*).
+1. **[Download chat-history-insights.py](https://github.com/Capitaogato/chat-history-insights/releases/latest/download/chat-history-insights.py)** – a plain text file for ChatGPT, nothing to install.
 2. Open a new chat in ChatGPT, drag the file in and write: **"Create my AI usage report with the attached file."**
 3. Send. ChatGPT first explains the whole procedure, then guides you through exporting and uploading your chats and builds the report.
 
@@ -75,7 +75,7 @@ MIT, © 2026 Philipp Günther ([ai-spark.de](https://ai-spark.de)). Not affiliat
 **Wie arbeitest du eigentlich mit KI?** Eine Datei, in ChatGPT gezogen, macht aus deinem eigenen Chatverlauf einen persönlichen Bericht, wahlweise auf Deutsch oder Englisch. Er zeigt, wofür du KI nutzt, wie gut du sie instruierst, ob du Antworten prüfst und was sich über die Zeit verändert hat.
 
 ### Schnellstart
-1. [`chat-history-insights.py`](chat-history-insights.py) herunterladen (auf der Dateiseite: *Download raw file*).
+1. **[chat-history-insights.py herunterladen](https://github.com/Capitaogato/chat-history-insights/releases/latest/download/chat-history-insights.py)** – eine normale Textdatei für ChatGPT, nichts zu installieren.
 2. In ChatGPT einen neuen Chat öffnen, die Datei hineinziehen und schreiben: **„Erstelle meinen KI-Bericht mit der angehängten Datei.“**
 3. Abschicken. ChatGPT führt dich durch den Export und das Hochladen deiner Chats und erstellt dann den Bericht.
 
