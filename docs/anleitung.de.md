@@ -13,7 +13,7 @@ Du brauchst einen Computer und deinen ChatGPT-Zugang. Plane zwei Etappen ein.
 4. **ZIP entpacken** (Mac: Doppelklick, Windows: Rechtsklick → „Alle extrahieren“). Du brauchst **nur die Dateien, deren Name mit „conversations“ beginnt**. Alles andere ignorierst du. **Zähle, wie viele es sind.**
 
 ## Teil B – Auswertung (etwa 30 Minuten)
-5. **Auswertungsdatei herunterladen:** `chat-history-insights.py` (Download-Button auf der Startseite). Du musst sie nicht öffnen.
+5. **Auswertungsdatei herunterladen:** `chat-history-insights_2.2.py` (Download-Button auf der Startseite). Du musst sie nicht öffnen.
 6. **Neuen Chat in ChatGPT öffnen**, im selben Konto.
 7. **Die Datei hineinziehen** und schreiben: **„Erstelle meinen KI-Bericht mit der angehängten Datei.“** Dann abschicken, noch ohne die conversations-Dateien.
 8. **ChatGPT fragt nach der Zahl der conversations-Dateien.** Schreib einfach die Zahl.
