@@ -1,5 +1,7 @@
 # chat-history-insights
 
+**➡️ Start page with step-by-step guide and download / Startseite mit Anleitung und Download: https://capitaogato.github.io/chat-history-insights/**
+
 **How do you actually work with AI?** One file, dropped into ChatGPT, turns your entire ChatGPT history – every chat you have ever had – into a personal report: what you use AI for, how well you brief it, whether you check its answers, and what has changed over time.
 
 **Why it's worth it:** most people judge their use of AI by gut feeling. Your own history shows how you really work – where you are already strong, where you can improve (e.g. briefing tasks clearly or checking answers) and which concrete steps help next.
