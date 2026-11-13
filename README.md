@@ -14,6 +14,8 @@ No installation, no account anywhere else, no data leaves ChatGPT.
 2. Open a new chat in ChatGPT, drag the file in and write: **"Create my AI usage report with the attached file."**
 3. Send. ChatGPT first explains the whole procedure, then guides you through exporting and uploading your chats and builds the report.
 
+**For non-technical users:** share the simple start page **https://capitaogato.github.io/chat-history-insights/** (download button, the sentence to copy, privacy note, DE/EN).
+
 Step-by-step guide: [English](docs/how-to.en.md) · [Deutsch](docs/anleitung.de.md)
 
 ## What you get
@@ -79,7 +81,7 @@ MIT, © 2026 Philipp Günther ([ai-spark.de](https://ai-spark.de)). Not affiliat
 2. In ChatGPT einen neuen Chat öffnen, die Datei hineinziehen und schreiben: **„Erstelle meinen KI-Bericht mit der angehängten Datei.“**
 3. Abschicken. ChatGPT führt dich durch den Export und das Hochladen deiner Chats und erstellt dann den Bericht.
 
-Ausführliche Anleitung: [Deutsch](docs/anleitung.de.md)
+Einfache Startseite zum Weitergeben: **https://capitaogato.github.io/chat-history-insights/** · Ausführliche Anleitung: [Deutsch](docs/anleitung.de.md)
 
 ### Datenschutz
 Deine Chats liegen bereits bei OpenAI, der Export ist nur eine Kopie davon. Lade ihn im selben Konto hoch, aus dem er stammt. Im Bericht stehen keine Chat-Texte. Dieses Projekt sammelt keine Daten.

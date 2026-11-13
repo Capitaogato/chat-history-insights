@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Wie arbeitest du mit KI? – Dein persönlicher KI-Bericht</title>
+<meta name="description" content="Eine Datei, in ChatGPT gezogen, macht aus deinem eigenen Chatverlauf einen persönlichen Bericht über deine KI-Nutzung.">
+<style>
+  :root{--paper:#f3efe6;--ink:#1c1b19;--mute:#6f6a60;--line:#d9d2c3;--accent:#2457D6;--hi:#ffe37a}
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--paper);color:var(--ink);font:18px/1.55 Georgia,"Iowan Old Style","Times New Roman",serif}
+  .wrap{max-width:760px;margin:0 auto;padding:28px 22px 80px}
+  .lang{text-align:right;font:14px system-ui,sans-serif}
+  .lang button{background:none;border:1px solid var(--line);border-radius:99px;padding:4px 12px;cursor:pointer;font:inherit;color:var(--mute)}
+  .lang button.on{background:var(--ink);color:var(--paper);border-color:var(--ink)}
+  h1{font-size:clamp(34px,7vw,54px);line-height:1.05;letter-spacing:-.02em;margin:34px 0 14px;font-weight:700}
+  h1 mark{background:linear-gradient(transparent 58%,var(--hi) 58%);color:inherit;padding:0 .1em}
+  .lead{font-size:21px;color:#3a3833;margin:0 0 34px}
+  ol.steps{list-style:none;padding:0;margin:0;counter-reset:s}
+  ol.steps>li{counter-increment:s;position:relative;padding:22px 0 22px 74px;border-top:1px solid var(--line)}
+  ol.steps>li:last-child{border-bottom:1px solid var(--line)}
+  ol.steps>li::before{content:counter(s);position:absolute;left:0;top:14px;font:700 52px/1 Georgia,serif;color:var(--accent)}
+  .steps h2{font:700 20px/1.3 system-ui,sans-serif;margin:0 0 6px}
+  .steps p{margin:0 0 10px}
+  .btn{display:inline-block;background:var(--accent);color:#fff;text-decoration:none;font:600 17px system-ui,sans-serif;padding:13px 22px;border-radius:6px;margin:6px 0}
+  .btn:hover{background:#1a46b3}
+  .small{font:14px/1.5 system-ui,sans-serif;color:var(--mute)}
+  .phrase{display:flex;gap:10px;align-items:stretch;flex-wrap:wrap;margin:8px 0}
+  .phrase code{flex:1 1 300px;background:#fff;border:2px dashed var(--ink);padding:12px 14px;font:600 17px/1.4 system-ui,sans-serif;border-radius:6px}
+  .phrase button{font:600 15px system-ui,sans-serif;border:2px solid var(--ink);background:var(--ink);color:var(--paper);border-radius:6px;padding:0 16px;cursor:pointer;min-height:48px}
+  .box{background:#fff;border-left:5px solid var(--accent);padding:16px 20px;margin:34px 0;font:16px/1.6 system-ui,sans-serif}
+  .box h3{margin:0 0 6px;font-size:16px}
+  details{font:16px/1.6 system-ui,sans-serif;border-top:1px solid var(--line);padding:12px 0}
+  summary{cursor:pointer;font-weight:600}
+  footer{margin-top:50px;font:13px system-ui,sans-serif;color:var(--mute)}
+  footer a{color:var(--mute)}
+  [data-l]{display:none} html[lang=de] [data-l=de], html[lang=en] [data-l=en]{display:revert}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="lang"><button id="b-de" class="on" onclick="setL('de')">Deutsch</button> <button id="b-en" onclick="setL('en')">English</button></div>
+
+  <div data-l="de">
+    <h1>Wie arbeitest du <mark>eigentlich</mark> mit KI?</h1>
+    <p class="lead">Eine Datei, in ChatGPT gezogen, macht aus deinem eigenen Chatverlauf einen persönlichen Bericht: wofür du KI nutzt, wie gut du sie anleitest, ob du Antworten prüfst – und was sich verändert hat.</p>
+    <ol class="steps">
+      <li><h2>Datei herunterladen</h2>
+        <p><a class="btn" href="https://github.com/Capitaogato/chat-history-insights/releases/latest/download/chat-history-insights.py">⬇ Datei herunterladen</a></p>
+        <p class="small">Eine normale Textdatei für ChatGPT. Du musst sie nicht öffnen und nichts installieren.</p></li>
+      <li><h2>Neuen Chat in ChatGPT öffnen</h2>
+        <p>Am besten am Computer im Browser auf <b>chatgpt.com</b>, mit dem Konto, dessen Chats du auswerten willst.</p></li>
+      <li><h2>Datei hineinziehen und diesen Satz schreiben</h2>
+        <div class="phrase"><code id="p-de">Erstelle meinen KI-Bericht mit der angehängten Datei.</code><button onclick="cp('p-de',this)">Kopieren</button></div>
+        <p class="small">Dann abschicken.</p></li>
+      <li><h2>ChatGPT führt dich durch den Rest</h2>
+        <p>Es erklärt dir, wie du deine Chats exportierst und hochlädst, wertet sie aus und gibt dir deinen Bericht als Datei zum Öffnen im Browser.</p>
+        <p class="small">Dauer: etwa 30 Minuten plus Wartezeit auf die E-Mail von OpenAI mit deinem Export.</p></li>
+    </ol>
+    <div class="box"><h3>Und meine Daten?</h3>
+      Deine Chats liegen bereits bei OpenAI – der Export ist nur eine Kopie davon. Du gibst also nichts Neues und keinem neuen Anbieter etwas preis. Lade den Export nur in dem Konto hoch, aus dem er stammt. Im Bericht stehen keine Chat-Texte. Dieses Projekt sammelt keine Daten.</div>
+    <details><summary>Was steht im Bericht?</summary>
+      Deine Stärken und blinden Flecken beim Arbeiten mit KI, was sich gegenüber dem Vorjahr verändert hat, wofür du KI nutzt und wie anspruchsvoll deine Anfragen sind – dazu drei konkrete nächste Schritte. Jede Aussage ist gekennzeichnet: gemessen, eingeordnet, statistisch abgesichert oder nicht belegbar. Den Bericht gibt es auf Deutsch oder Englisch.</details>
+    <details><summary>Was brauche ich?</summary>
+      Einen Computer und ein ChatGPT-Konto, das Dateien hochladen und auswerten kann. Mit kostenlosen Konten stößt man eventuell an Nutzungsgrenzen. Firmenkonten (ChatGPT Business/Enterprise) bieten keinen eigenen Export – dort hilft nur die IT-Abteilung.</details>
+    <details><summary>Wie verlässlich ist das?</summary>
+      Der Bericht ist eine strukturierte Selbsteinschätzung, keine Bewertung einer Person. ChatGPT liest eine Zufallsauswahl deiner Chats nach festen Regeln und prüft seine Einordnung ein zweites Mal. Was diese Prüfungen nicht besteht, wird als nicht belastbar gekennzeichnet oder weggelassen.</details>
+  </div>
+
+  <div data-l="en">
+    <h1>How do you <mark>actually</mark> work with AI?</h1>
+    <p class="lead">One file, dropped into ChatGPT, turns your own chat history into a personal report: what you use AI for, how well you brief it, whether you check its answers – and what has changed.</p>
+    <ol class="steps">
+      <li><h2>Download the file</h2>
+        <p><a class="btn" href="https://github.com/Capitaogato/chat-history-insights/releases/latest/download/chat-history-insights.py">⬇ Download the file</a></p>
+        <p class="small">A plain text file for ChatGPT. You don't need to open it or install anything.</p></li>
+      <li><h2>Open a new chat in ChatGPT</h2>
+        <p>Ideally on a computer at <b>chatgpt.com</b>, signed in to the account whose chats you want to analyse.</p></li>
+      <li><h2>Drag the file in and write this sentence</h2>
+        <div class="phrase"><code id="p-en">Create my AI usage report with the attached file.</code><button onclick="cp('p-en',this)">Copy</button></div>
+        <p class="small">Then send.</p></li>
+      <li><h2>ChatGPT guides you through the rest</h2>
+        <p>It explains how to export and upload your chats, analyses them and gives you your report as a file to open in your browser.</p>
+        <p class="small">Takes about 30 minutes, plus waiting for OpenAI's email with your export.</p></li>
+    </ol>
+    <div class="box"><h3>What about my data?</h3>
+      Your chats are already stored at OpenAI – the export is just a copy. You're not sharing anything new or with any new provider. Upload the export only into the account it came from. The report contains no chat texts. This project collects no data.</div>
+    <details><summary>What's in the report?</summary>
+      Your strengths and blind spots when working with AI, what has changed since last year, what you use AI for and how demanding your requests are – plus three concrete next steps. Every statement is labelled: measured, classified, statistically supported or not supported. Available in English or German.</details>
+    <details><summary>What do I need?</summary>
+      A computer and a ChatGPT account that can upload and analyse files. Free accounts may hit usage limits. Company accounts (ChatGPT Business/Enterprise) have no self-service export – only your IT department can help there.</details>
+    <details><summary>How reliable is it?</summary>
+      The report is a structured self-assessment, not an evaluation of a person. ChatGPT reads a random sample of your chats using fixed rules and checks its classification a second time. Anything that fails these checks is marked as unreliable or left out.</details>
+  </div>
+
+  <footer>
+    <span data-l="de">Offen, kostenlos, ohne Datensammlung · <a href="https://github.com/Capitaogato/chat-history-insights">Quellcode und Methodik ansehen</a> · MIT-Lizenz · © 2026 Philipp Günther, <a href="https://ai-spark.de">ai-spark.de</a> · Kein Angebot von OpenAI.</span>
+    <span data-l="en">Open, free, no data collection · <a href="https://github.com/Capitaogato/chat-history-insights">View source and method</a> · MIT License · © 2026 Philipp Günther, <a href="https://ai-spark.de">ai-spark.de</a> · Not affiliated with OpenAI.</span>
+  </footer>
+</div>
+<script>
+  function setL(l){document.documentElement.lang=l;document.getElementById('b-de').classList.toggle('on',l==='de');document.getElementById('b-en').classList.toggle('on',l==='en');try{localStorage.setItem('chi-lang',l)}catch(e){}}
+  (function(){var l=null;try{l=localStorage.getItem('chi-lang')}catch(e){}if(!l)l=(navigator.language||'de').slice(0,2)==='de'?'de':'en';setL(l)})();
+  function cp(id,b){var t=document.getElementById(id).innerText;var done=function(){var o=b.innerText;b.innerText='✓';setTimeout(function(){b.innerText=o},1500)};
+    if(navigator.clipboard){navigator.clipboard.writeText(t).then(done,done)}else{var r=document.createRange();r.selectNode(document.getElementById(id));getSelection().removeAllRanges();getSelection().addRange(r);try{document.execCommand('copy')}catch(e){}done()}}
+</script>
+</body>
+</html>
