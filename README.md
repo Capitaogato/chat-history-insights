@@ -2,6 +2,8 @@
 
 **How do you actually work with AI?** One file, dropped into ChatGPT, turns your entire ChatGPT history – every chat you have ever had – into a personal report: what you use AI for, how well you brief it, whether you check its answers, and what has changed over time.
 
+**Why it's worth it:** most people judge their use of AI by gut feeling. Your own history shows how you really work – where you are already strong, where you can improve (e.g. briefing tasks clearly or checking answers) and which concrete steps help next.
+
 No installation, no account anywhere else, no data leaves ChatGPT.
 
 *[Deutsche Version weiter unten](#deutsch)*
@@ -89,6 +91,8 @@ MIT, © 2026 Philipp Günther ([ai-spark.de](https://ai-spark.de)). Not affiliat
 ## Deutsch
 
 **Wie arbeitest du eigentlich mit KI?** Eine Datei, in ChatGPT gezogen, macht aus deiner gesamten ChatGPT-Historie – allen Chats, die du je geführt hast – einen persönlichen Bericht, wahlweise auf Deutsch oder Englisch. Er zeigt, wofür du KI nutzt, wie gut du sie instruierst, ob du Antworten prüfst und was sich über die Zeit verändert hat.
+
+**Warum sich das lohnt:** Die meisten schätzen ihren Umgang mit KI aus dem Bauch heraus. Deine eigene Historie zeigt, wie du wirklich arbeitest – wo du schon stark bist, wo du besser werden kannst (z. B. Aufgaben klar beschreiben oder Antworten prüfen) und welche konkreten Schritte dir als Nächstes helfen.
 
 ### Schnellstart
 Die Auswertung arbeitet mit deinem eigenen ChatGPT-Datenexport. **Fordere ihn zuerst an** – er kommt per E-Mail und kann etwas dauern.

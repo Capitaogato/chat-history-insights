@@ -90,6 +90,10 @@
   .phase{font:700 13px/1 system-ui,sans-serif;letter-spacing:.12em;text-transform:uppercase;color:var(--accent);margin:46px 0 6px}
   .phase-t{font:700 26px/1.2 system-ui,sans-serif;margin:0 0 6px}
   .phase-d{color:var(--mute);font:16px/1.5 system-ui,sans-serif;margin:0 0 16px}
+  .why{display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:12px;margin:0 0 30px}
+  .why div{background:#fff;border:1px solid var(--line);border-radius:6px;padding:14px 16px;font:15px/1.5 system-ui,sans-serif}
+  .why b{display:block;font-size:16px;margin-bottom:4px;color:var(--ink)}
+  .why-t{font:700 13px/1 system-ui,sans-serif;letter-spacing:.12em;text-transform:uppercase;color:var(--accent);margin:0 0 12px}
   .wait{background:var(--hi);padding:14px 18px;border-radius:6px;font:16px/1.55 system-ui,sans-serif;margin:16px 0}
   .path{display:inline-block;background:#fff;border:1px solid var(--line);border-radius:4px;padding:2px 8px;font:600 15px system-ui,sans-serif;margin:2px 0}
   ul.sub{font:16px/1.6 system-ui,sans-serif;padding-left:20px;margin:6px 0}
@@ -116,6 +120,14 @@
   <div data-l="de">
     <h1>Wie arbeitest du <mark>eigentlich</mark> mit KI?</h1>
     <p class="lead">Eine Datei, in ChatGPT gezogen, macht aus deiner <b>gesamten ChatGPT-Historie</b> – allen Chats, die du je geführt hast – einen persönlichen Bericht: wofür du KI nutzt, wie gut du sie anleitest, ob du Antworten prüfst – und was sich verändert hat.</p>
+        <div class="why-t">Warum sich das lohnt</div>
+    <div class="why">
+      <div><b>Sehen statt vermuten</b>Die meisten schätzen ihren Umgang mit KI aus dem Bauch heraus. Deine Chat-Historie zeigt, wie du wirklich arbeitest.</div>
+      <div><b>Erkennen, wo du besser werden kannst</b>Zum Beispiel, ob du Aufgaben klar beschreibst oder Antworten ungeprüft übernimmst. Genau dort liegt meist der größte Hebel.</div>
+      <div><b>Konkrete nächste Schritte</b>Keine allgemeinen Tipps, sondern Sätze, die du im nächsten Chat direkt ausprobieren kannst.</div>
+      <div><b>Deine Entwicklung</b>Was sich gegenüber dem Vorjahr verändert hat – und was nur so aussieht.</div>
+    </div>
+
     <p class="wait">⏱ <b>Plane zwei Etappen ein:</b> Zuerst forderst du bei OpenAI eine Kopie deiner Chats an. Die kommt per E-Mail, meist nach Minuten bis Stunden, selten erst nach einigen Tagen. Wenn sie da ist, machst du den Rest in etwa 30 Minuten.</p>
 
     <div class="phase">Teil A · Vorbereitung</div>
@@ -183,6 +195,14 @@
   <div data-l="en">
     <h1>How do you <mark>actually</mark> work with AI?</h1>
     <p class="lead">One file, dropped into ChatGPT, turns your <b>entire ChatGPT history</b> – every chat you have ever had – into a personal report: what you use AI for, how well you brief it, whether you check its answers – and what has changed.</p>
+        <div class="why-t">Why it's worth it</div>
+    <div class="why">
+      <div><b>See instead of guess</b>Most people judge their use of AI by gut feeling. Your chat history shows how you really work.</div>
+      <div><b>Find where you can improve</b>For example, whether you describe tasks clearly or accept answers without checking. That's usually where the biggest lever is.</div>
+      <div><b>Concrete next steps</b>Not generic tips, but sentences you can try straight away in your next chat.</div>
+      <div><b>Your development</b>What has changed compared with last year – and what only looks like it has.</div>
+    </div>
+
     <p class="wait">⏱ <b>Plan for two stages:</b> first you request a copy of your chats from OpenAI. It arrives by email, usually within minutes to hours, occasionally after a few days. Once it's there, the rest takes about 30 minutes.</p>
 
     <div class="phase">Part A · Preparation</div>
