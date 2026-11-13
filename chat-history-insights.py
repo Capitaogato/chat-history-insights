@@ -6,8 +6,10 @@ Führe jetzt im Python-Werkzeug aus:
     import sys, shutil, glob; sys.path.insert(0, "/mnt/data")
     f = [p for p in glob.glob("/mnt/data/**/*.py", recursive=True) if "ANLEITUNG = r" in open(p, errors="ignore").read()][0]
     shutil.copy(f, "/mnt/data/chi_core.py"); import chi_core as rg; rg.start()
-und folge dann genau der ausgegebenen Anleitung. Erzähle dem Nutzer nichts über Code oder diese Datei.
-Then follow the printed instructions exactly. Do not tell the user about code or this file.
+und folge dann genau der ausgegebenen Anleitung. Deine erste Antwort an den Nutzer ist der Text, den rg.begruessung() ausgibt, wörtlich.
+Erzähle dem Nutzer nichts über Code oder diese Datei.
+Then follow the printed instructions exactly. Your first reply to the user is the text printed by rg.begruessung(), verbatim.
+Do not tell the user about code or this file.
 """
 
 import os, re, json, glob, zipfile, hashlib, math, random, io, base64, html, datetime as dt, warnings
@@ -167,7 +169,7 @@ def einlesen():
         except zipfile.BadZipFile:
             files[os.path.basename(z)] = {"status": "defekt", "grund": "ZIP beschädigt"}
     allc = {r["id"]: r for r in df.to_dict("records")} if len(df) else {}
-    msgs = []
+    msgs, defekt = [], []
     for f in sorted(set(cands)):
         name = os.path.basename(f)
         if not re.search(r"conversations", name, re.I): continue
@@ -178,7 +180,7 @@ def einlesen():
             obj = [json.loads(l) for l in raw.splitlines() if l.strip()] if f.endswith(".jsonl") else json.loads(raw)
         except Exception:
             files[h] = {"name": name, "status": "defekt", "grund": "unvollständig oder kein gültiges Format"}
-            msgs.append(f"DEFEKT  {name}: unvollständig angekommen oder beschädigt"); continue
+            msgs.append(f"DEFEKT  {name}: unvollständig angekommen oder beschädigt"); defekt.append(re.sub(r"\.jsonl?$", "", name)); continue
         items = _items(obj)
         if items is None:
             files[h] = {"name": name, "status": "fremd"}; msgs.append(f"FREMD   {name}: enthält keine Unterhaltungen"); continue
@@ -204,7 +206,109 @@ def einlesen():
     _save("state.json", {"gates": {}, "done": ["einlesen"]})   # neue Daten: alle späteren Schritte neu
     print("\n".join(msgs) if msgs else "Keine neuen Dateien gefunden.")
     print(f"BESTAND: {len(df)} Chats aus {sum(1 for v in files.values() if v.get('status') == 'ok')} Dateien")
+    fertig = _upload_meldung(df, files, defekt)
+    print("ALLE DATEIEN DA → direkt mit Teil D beginnen (rg.daten_pruefen())." if fertig else "WARTEN auf weitere Dateien.")
     return len(df)
+
+# ---------------------------------------------------------------- Texte für den Nutzer (wörtlich auszugeben)
+_M0, _M1 = "===== TEXT FÜR DEN NUTZER – WÖRTLICH AUSGEBEN =====", "===== ENDE TEXT ====="
+def _ui(): return _load("ui.json", {"sprache": "de", "erwartet": None})
+def _say(text): print(_M0); print(text.strip()); print(_M1)
+GRUSS = {
+"de": """Hallo! Ich erstelle dir einen persönlichen Bericht darüber, wie du mit ChatGPT arbeitest – mit deinen Stärken, blinden Flecken und Tipps für den nächsten Schritt. Den Bericht bekommst du auf Deutsch. Wenn du ihn lieber auf Englisch möchtest, schreib es einfach.
+
+**So läuft es ab – insgesamt etwa 30 Minuten plus Wartezeit auf die E-Mail von OpenAI:**
+1. **Chats exportieren:** Du forderst bei ChatGPT eine Kopie deiner Chats an und lädst sie herunter. *(5 Minuten, dann warten auf die E-Mail)*
+2. **Dateien hochladen:** Du ziehst die Dateien mit deinen Chats in diesen Chat, je bis zu 10 auf einmal. *(5 Minuten)*
+3. **Warten:** Ich lese und werte deine Chats aus. Du musst nichts tun. *(15–25 Minuten)*
+4. **Bericht öffnen:** Du bekommst eine Datei, die du mit Doppelklick im Browser öffnest.
+
+Du brauchst dafür einen **Computer** (kein Handy) und **diesen Chat** – bleib bitte in diesem Fenster, auch wenn du zwischendurch auf die E-Mail wartest.
+
+**Und meine Daten?**
+Deine Chats liegen bereits bei OpenAI – der Export ist nur eine Kopie davon. Du gibst also nichts Neues und keinem neuen Anbieter etwas preis. Wichtig ist nur: Lade den Export in **demselben Konto** hoch, aus dem er stammt (also nicht den Export aus dem Firmenkonto in ein privates Konto oder umgekehrt). Im Bericht stehen keine Chat-Texte, und diesen Chat kannst du danach löschen.
+
+**Schritt 1 von 4: Deine Chats exportieren**
+1. Öffne ChatGPT am Computer im Browser (chatgpt.com) und melde dich mit diesem Konto an.
+2. Klicke unten links auf deinen Namen bzw. dein Profilbild → **Einstellungen**.
+3. Wähle **Datenkontrollen** → neben „Daten exportieren“ auf **Exportieren** → **Export bestätigen**.
+4. OpenAI schickt dir eine E-Mail mit einem Download-Link. Meist dauert das Minuten bis wenige Stunden, selten bis zu 7 Tage. **Der Link gilt nur 24 Stunden** – lade die Datei also bald herunter, angemeldet im selben Konto.
+5. Öffne die heruntergeladene ZIP-Datei (Mac: Doppelklick · Windows: Rechtsklick → „Alle extrahieren“).
+6. Im Ordner findest du Dateien, deren Name mit **conversations** beginnt, z. B. *conversations-000.json*. Nur diese brauchen wir.
+
+*Kein Menüpunkt „Daten exportieren“?* Dann geht es über das Datenschutzportal von OpenAI: **privacy.openai.com** → „Make a Privacy Request“ → „I have a consumer ChatGPT account“ → „Download my data“.
+*Firmenkonto (ChatGPT Business oder Enterprise)?* Dort gibt es keinen eigenen Export – nur deine IT-Abteilung kann ihn erstellen.
+
+👉 **Melde dich hier, sobald du den Ordner vor dir hast, und schreib mir, wie viele Dateien mit „conversations“ beginnen.**""",
+"en": """Hi! I'll create a personal report on how you work with ChatGPT – your strengths, blind spots and tips for your next step. You'll get the report in English. If you'd rather have it in German, just say so.
+
+**How it works – about 30 minutes in total, plus waiting for OpenAI's email:**
+1. **Export your chats:** you request a copy of your chats from ChatGPT and download it. *(5 minutes, then wait for the email)*
+2. **Upload the files:** you drag the files with your chats into this chat, up to 10 at a time. *(5 minutes)*
+3. **Wait:** I read and analyse your chats. You don't need to do anything. *(15–25 minutes)*
+4. **Open your report:** you get a file that opens in your browser with a double-click.
+
+You need a **computer** (not a phone) and **this chat** – please come back to this window, even if you wait for the email in between.
+
+**What about my data?**
+Your chats are already stored at OpenAI – the export is just a copy. You're not sharing anything new or with any new provider. Just one thing matters: upload the export into the **same account** it came from (never a company export into a private account or the other way round). The report contains no chat texts, and you can delete this chat afterwards.
+
+**Step 1 of 4: Export your chats**
+1. Open ChatGPT in a browser on your computer (chatgpt.com) and sign in with this account.
+2. Click your name or profile picture at the bottom left → **Settings**.
+3. Choose **Data controls** → next to "Export data" click **Export** → **Confirm export**.
+4. OpenAI emails you a download link. This usually takes minutes to a few hours, occasionally up to 7 days. **The link is only valid for 24 hours**, so download soon, signed in to the same account.
+5. Open the downloaded ZIP file (Mac: double-click · Windows: right-click → "Extract all").
+6. In the folder, look for files whose names start with **conversations**, e.g. *conversations-000.json*. Those are the only ones we need.
+
+*No "Export data" option?* Use OpenAI's privacy portal instead: **privacy.openai.com** → "Make a Privacy Request" → "I have a consumer ChatGPT account" → "Download my data".
+*Company account (ChatGPT Business or Enterprise)?* There is no self-service export there – only your IT department can create one.
+
+👉 **Let me know here as soon as you have the folder open, and tell me how many files start with "conversations".**"""}
+
+def begruessung(sprache="de"):
+    """ERSTE ANTWORT AN DEN NUTZER. sprache = Sprache seiner ersten Nachricht ("de"/"en"). Text wörtlich ausgeben."""
+    u = _ui(); u["sprache"] = "en" if str(sprache).lower().startswith("en") else "de"; _save("ui.json", u)
+    _say(GRUSS[u["sprache"]])
+
+def sprache_setzen(sprache):
+    """Wenn der Nutzer die Sprache von Gespräch/Bericht wechselt."""
+    u = _ui(); u["sprache"] = "en" if str(sprache).lower().startswith("en") else "de"; _save("ui.json", u); print("Sprache:", u["sprache"])
+
+def upload_plan(anzahl_dateien):
+    """Aufrufen, sobald der Nutzer die Zahl der conversations-Dateien nennt. Text wörtlich ausgeben."""
+    u = _ui(); n = max(1, int(anzahl_dateien)); u["erwartet"] = n; _save("ui.json", u)
+    k = math.ceil(n / 10); en = u["sprache"] == "en"
+    if n <= 10:
+        t = (f"Great – {n} file{'s' if n > 1 else ''}. **Step 2 of 4:** Select {'all of them' if n > 1 else 'it'}, drag {'them' if n > 1 else 'it'} into this chat window and send the message. You don't need to write anything."
+             if en else f"Super – {n} Datei{'en' if n > 1 else ''}. **Schritt 2 von 4:** Markiere {'alle' if n > 1 else 'sie'}, zieh {'sie' if n > 1 else 'sie'} in dieses Chatfenster und schick die Nachricht ab. Du musst nichts dazuschreiben.")
+    else:
+        t = (f"Great – {n} files. ChatGPT accepts at most 10 files per message, so we'll upload them in **{k} batches**.\n\n**Step 2 of 4:** Select the first 10 conversations files, drag them into this chat window and send the message. You don't need to write anything.\n\n*Tip: to select several files, hold Cmd (Mac) or Ctrl (Windows) and click each one.*"
+             if en else f"Super – {n} Dateien. ChatGPT nimmt höchstens 10 Dateien pro Nachricht an, deshalb laden wir sie in **{k} Paketen** hoch.\n\n**Schritt 2 von 4:** Markiere die ersten 10 conversations-Dateien, zieh sie in dieses Chatfenster und schick die Nachricht ab. Du musst nichts dazuschreiben.\n\n*Tipp: Mehrere Dateien markierst du, indem du die Cmd-Taste (Mac) bzw. Strg-Taste (Windows) gedrückt hältst und jede Datei anklickst.*")
+    _say(t)
+
+def _upload_meldung(df, files, defekt):
+    u = _ui(); en = u["sprache"] == "en"; exp = u.get("erwartet")
+    okn = {re.sub(r"\.jsonl?$", "", v["name"]) for v in files.values() if v.get("status") in ("ok", "leer")}
+    offen = sorted({re.sub(r"\.jsonl?$", "", v["name"]) for v in files.values() if v.get("status") == "defekt"} - okn)
+    got = len(okn); n = len(df); nchat = f"{n:,}".replace(",", "," if en else ".")
+    u["pakete"] = u.get("pakete", 0) + 1; _save("ui.json", u)
+    k = max(math.ceil((exp or got) / 10), u["pakete"])
+    fix = [(f"The file **{d}** didn't arrive completely. Please drag it in again." if en else f"Die Datei **{d}** ist nicht vollständig angekommen. Zieh sie bitte noch einmal hier rein.") for d in offen]
+    rest = (exp - got) if exp else 0
+    if rest > 0 and rest > len(offen):
+        neu = rest - len(offen); m = min(10 - len(offen), neu) if len(offen) < 10 else 0
+        head = (f"Batch {u['pakete']} of {k} has arrived – {got} of {exp} files, {nchat} chats so far." if en
+                else f"Paket {u['pakete']} von {k} ist angekommen – {got} von {exp} Dateien, bisher {nchat} Chats.")
+        if en: task = f"👉 **Now drag the next {m} file{'s' if m != 1 else ''} in here and send.**" + (" (plus the file mentioned above)" if offen else "")
+        else: task = f"👉 **Zieh jetzt die nächste{'n ' + str(m) + ' Dateien' if m != 1 else ' Datei'} hier rein und schick ab.**" + (" (zusammen mit der oben genannten Datei)" if offen else "")
+        _say("\n\n".join([head] + fix + [task])); return False
+    if offen:
+        head = (f"Almost done – {got} of {exp or got + len(offen)} files, {nchat} chats so far." if en else f"Fast geschafft – {got} von {exp or got + len(offen)} Dateien, bisher {nchat} Chats.")
+        _say("\n\n".join([head] + fix[:-1] + ["👉 " + fix[-1]])); return False
+    _say((f"All files are here – {nchat} chats in total. **Step 3 of 4:** I'm now analysing everything. This takes about 15 to 25 minutes because I read many chats one by one and double-check my classification. You don't need to do anything."
+          if en else f"Alle Dateien sind da – insgesamt {nchat} Chats. **Schritt 3 von 4:** Jetzt werte ich alles aus. Das dauert etwa 15 bis 25 Minuten, weil ich viele Chats einzeln lese und meine Einordnung noch einmal überprüfe. Du musst nichts tun."))
+    return True
 
 # ---------------------------------------------------------------- 2. Datenqualität (Gate G1)
 def _df():
@@ -768,10 +872,10 @@ def _pname(n):
     if _L != "en" or not n: return n
     return (n.replace("heute", "today").replace("ein Jahr zuvor", "a year earlier").replace("Anfangszeit", "early period").replace("zuletzt", "latest"))
 
-def bericht(schritte, sprache="de"):
+def bericht(schritte, sprache=None):
     """schritte: [{"verhalten": "<schlüssel>", "text": "…konkrete Formulierung…"}] – bis zu 3, nur für kandidaten().
     sprache: "de" oder "en" – Sprache des Berichts (Texte der Schritte in derselben Sprache übergeben)."""
-    global _L; _L = "en" if str(sprache).lower().startswith("en") else "de"
+    global _L; sprache = sprache or _ui()["sprache"]; _L = "en" if str(sprache).lower().startswith("en") else "de"
     INAME = {k: (IND_EN[k] if _L == "en" else v[0]) for k, v in IND.items()}
     import matplotlib.ticker as mt
     s = _need("auswertung"); G = s["gates"]
@@ -936,7 +1040,7 @@ table{{width:100%;border-collapse:collapse;font:13px system-ui,sans-serif}} td,t
 ANLEITUNG = r"""Du wertest meinen ChatGPT-Datenexport aus und erstellst einen Bericht als HTML-Datei: wie ich mit KI arbeite, was sich verändert hat und was mein nächster Lernschritt ist. Die gesamte Methodik steckt in dieser Datei (chat-history-insights). Du führst sie aus, liest und ordnest Chats ein, wo sie dich dazu auffordert, und sprichst mit mir.
 
 ## A. Wie du mit mir sprichst
-**Sprache:** Antworte in der Sprache meiner ersten Nachricht (Deutsch oder Englisch). Alle Formulierungen in dieser Anleitung sind deutsche Beispiele. Schreibe ich Englisch, übersetzt du sie sinngemäß. Die Menüs heißen dann Settings → Data controls → Export data, und „Und meine Daten?“ wird zu „What about my data?“. **Berichtssprache:** Den Bericht gibt es auf Deutsch oder Englisch. Standard ist die Sprache unseres Gesprächs. In Schritt 1 sagst du in einem Satz: „Deinen Bericht bekommst du auf Deutsch – wenn du ihn lieber auf Englisch möchtest, schreib es einfach.“ (bzw. umgekehrt). Ich kann die Sprache jederzeit ändern, auch nach dem fertigen Bericht. Dann erzeugst du ihn mit `rg.bericht(..., sprache="en")` bzw. `"de"` neu, ohne erneute Auswertung, und übersetzt die nächsten Schritte.
+**Sprache:** Antworte in der Sprache meiner ersten Nachricht (Deutsch oder Englisch). Alle eigenen Formulierungen in dieser Anleitung sind deutsche Beispiele, die du bei Englisch sinngemäß übersetzt. Texte zwischen den Markern sind schon in der richtigen Sprache: Du gibst sie wörtlich aus. Der Bericht kommt in der Gesprächssprache. Wünsche ich die andere Sprache, rufst du `rg.sprache_setzen(...)` auf. Ist der Bericht schon fertig, erzeugst du ihn mit `rg.bericht(..., sprache="en")` bzw. `"de"` neu, ohne erneute Auswertung, und übersetzt die nächsten Schritte.
 
 Ich bin kein Technik-Profi.
 - **Einfache Sprache:** kurze Sätze, Du-Form, freundlich. Keine Fachwörter wie Python, JSON, Code, Skript, Cluster oder Stichprobe. Sag stattdessen Datei, Chats, Auswertung, Themen, Auswahl.
@@ -957,29 +1061,14 @@ Ich bin kein Technik-Profi.
 
 ## C. Ablauf für mich (4 Schritte: Export holen – Dateien hochladen – warten – Bericht öffnen)
 
-**Schritt 1 – Begrüßen und Export erklären.**
-Du hast das Modul bereits als `rg` geladen. Schreib mir jetzt, ohne etwas über die Datei oder diese Anleitung zu erzählen:
-- einen Satz dazu, was ich bekomme: einen persönlichen Bericht, wie ich mit ChatGPT arbeite, und Tipps für den nächsten Schritt
-- den Abschnitt **„Und meine Daten?“** in drei Sätzen:
-  1. Deine Chats liegen bereits bei OpenAI. Der Export ist nur eine Kopie davon, du gibst also nichts Neues und keinem neuen Anbieter etwas preis.
-  2. Wichtig ist nur: Lade den Export im **selben Konto** hoch, aus dem er stammt. Also keinen Export aus dem Firmenkonto in ein privates Konto und umgekehrt.
-  3. Im Bericht stehen keine Chat-Texte. Wenn du magst, kannst du diesen Chat danach löschen.
-- die Anleitung, nummeriert:
-  1. Am Computer ChatGPT im Browser öffnen.
-  2. Unten links auf deinen Namen bzw. dein Profilbild klicken → **Einstellungen** → **Datenkontrollen** → **Daten exportieren** → bestätigen.
-  3. Du bekommst eine E-Mail von OpenAI, das kann einige Minuten bis wenige Stunden dauern. Darin auf den Download-Link klicken.
-  4. Die ZIP-Datei öffnen (Mac: Doppelklick, Windows: Rechtsklick → „Alle extrahieren“).
-  5. Im Ordner die Dateien suchen, deren Name mit **conversations** beginnt.
-- Aufgabe: **„Melde dich, sobald du die conversations-Dateien vor dir hast, und schreib mir, wie viele es sind.“**
+**Schritt 1 – Begrüßen und Export erklären.** Rufe `rg.begruessung("de")` auf (bzw. `"en"`, wenn meine erste Nachricht englisch ist). Deine erste Antwort an mich ist **genau der Text zwischen den Markern, wörtlich und vollständig**, ohne eigene Einleitung, ohne Kürzung und ohne die Marker selbst. Bitte mich in dieser ersten Antwort um nichts anderes.
 
-**Schritt 2 – Hochladen.** Sag mir, wie viele Pakete mit höchstens 10 Dateien es werden, und bitte mich: **„Zieh die ersten 10 Dateien hier rein und schick ab.“**
-Nach jedem Paket: `rg.einlesen()` ausführen. Melde den Stand in einem Satz, z. B. „Paket 2 von 4 ist angekommen – bisher 1.240 Chats“, und gib mir die nächste Aufgabe.
-- Steht dort DEFEKT: **„Die Datei conversations-007 ist nicht vollständig angekommen. Zieh sie bitte noch einmal hier rein.“**
-- Steht dort FREMD: überspringen, ohne es zu erwähnen.
+**Schritt 2 – Hochladen.** Nenne ich die Zahl der Dateien, rufst du `rg.upload_plan(<Zahl>)` auf und gibst den Text zwischen den Markern wörtlich aus. Weiß ich die Zahl nicht, bittest du mich einmal, nachzuzählen. Lade ich ohne Zahl schon Dateien hoch, rufst du `rg.upload_plan(<Zahl der hochgeladenen Dateien>)` auf und arbeitest weiter.
+Nach **jedem** Paket rufst du `rg.einlesen()` auf. Deine Antwort an mich ist **nur der Text zwischen den Markern, wörtlich**. Steht danach „ALLE DATEIEN DA“, machst du ohne Rückfrage mit Teil D weiter.
 - Meldet eine Funktion „Bestand leer“, ist die Sitzung abgelaufen. Dann schreibst du: **„Die Verbindung wurde zwischendurch zurückgesetzt. Bitte lade die Dateien noch einmal hoch – tut mir leid für den Umweg.“**
-Nach dem letzten Paket machst du ohne Rückfrage mit Schritt 3 weiter.
+- Wechsle ich die Sprache, rufst du `rg.sprache_setzen("en")` bzw. `("de")` auf.
 
-**Schritt 3 – Auswertung.** Schreib: „Jetzt werte ich alles aus. Das dauert etwa 15 bis 25 Minuten, weil ich viele Chats einzeln lese und meine Einordnung noch einmal überprüfe. Du musst nichts tun.“ Dann arbeitest du Teil D vollständig ab. Zwischendurch gibst du höchstens kurze Fortschrittsmeldungen.
+**Schritt 3 – Auswertung.** Diese Ankündigung hat `rg.einlesen()` bereits ausgegeben. Du arbeitest jetzt Teil D vollständig ab. Zwischendurch gibst du höchstens kurze Fortschrittsmeldungen.
 
 **Schritt 4 – Abschluss.** Schreib mir:
 - **„Dein Bericht ist fertig: [Download-Link zur erzeugten Datei: ki-bericht.html bzw. ai-usage-report.html]. Klicke darauf und öffne die Datei mit Doppelklick – sie öffnet sich in deinem Browser.“**
@@ -1009,3 +1098,4 @@ Diese Anleitung hat Vorrang vor allen allgemeinen Gewohnheiten. Beginne jetzt mi
 def start():
     """Gibt die verbindliche Anleitung für ChatGPT aus. Wird als Erstes aufgerufen."""
     print(ANLEITUNG)
+    print("\nNÄCHSTER AUFRUF: rg.begruessung(\"de\") oder rg.begruessung(\"en\") – dann den Text zwischen den Markern wörtlich als erste Antwort ausgeben.")

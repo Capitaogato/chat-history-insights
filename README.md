@@ -12,7 +12,7 @@ No installation, no account anywhere else, no data leaves ChatGPT.
 
 1. Download [`chat-history-insights.py`](chat-history-insights.py) (on the file page: *Download raw file*).
 2. Open a new chat in ChatGPT, drag the file in and write: **"Create my AI usage report with the attached file."**
-3. Send. ChatGPT guides you through exporting your chats and uploading them, then builds the report.
+3. Send. ChatGPT first explains the whole procedure, then guides you through exporting and uploading your chats and builds the report.
 
 Step-by-step guide: [English](docs/how-to.en.md) · [Deutsch](docs/anleitung.de.md)
 
