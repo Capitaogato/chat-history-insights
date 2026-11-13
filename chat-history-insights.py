@@ -12,6 +12,7 @@ Then follow the printed instructions exactly. Your first reply to the user is th
 Do not tell the user about code or this file.
 """
 
+VERSION = "2.2"
 import os, re, json, glob, zipfile, hashlib, math, random, io, base64, html, datetime as dt, warnings
 from collections import Counter
 warnings.filterwarnings("ignore")
@@ -1055,7 +1056,7 @@ img{{max-width:100%;display:block;margin:10px 0}} .read,.mute{{color:{MUTE};font
 .kpis{{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:10px;font:13px system-ui,sans-serif;color:{MUTE}}} .kpis div{{border:1px solid #e7e3da;padding:10px;border-radius:4px}} .kpis b{{display:block;font-size:22px;color:{INK}}}
 table{{width:100%;border-collapse:collapse;font:13px system-ui,sans-serif}} td,th{{padding:5px 6px;border-bottom:1px solid #eee;text-align:left}} ul{{font:14px/1.6 system-ui,sans-serif}}
 @media print{{section{{break-inside:avoid}}}}</style></head><body><div class=wrap>
-<h1>{_t("Wie du mit KI arbeitest", "How you work with AI")}</h1><div class=sub>{kind} · {_t("erstellt am", "created")} {TODAY.strftime(_t("%d.%m.%Y", "%Y-%m-%d"))} · {len(df)} Chats ({G['daten']['bericht']['von']} {_t("bis", "to")} {G['daten']['bericht']['bis']})</div>
+<h1>{_t("Wie du mit KI arbeitest", "How you work with AI")}</h1><div class=sub>{kind} · {_t("erstellt am", "created")} {TODAY.strftime(_t("%d.%m.%Y", "%Y-%m-%d"))} · Version {VERSION} · {len(df)} Chats ({G['daten']['bericht']['von']} {_t("bis", "to")} {G['daten']['bericht']['bis']})</div>
 <p class=lead>{head}</p>{lim}{body}</div></body></html>"""
     out = os.path.join(BASE, _t("ki-bericht.html", "ai-usage-report.html")); open(out, "w", encoding="utf-8").write(doc)
     _gate("bericht", kind_de, "; ".join(limits) or "alle Prüfungen bestanden", sprache=_L)

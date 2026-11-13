@@ -13,7 +13,7 @@ You need a computer and your ChatGPT account. Plan for two stages.
 4. **Unzip** (Mac: double-click, Windows: right-click → "Extract all"). You **only need the files whose names start with "conversations"**. Ignore everything else. **Count how many there are.**
 
 ## Part B – Analysis (about 30 minutes)
-5. **Download the analysis file** `chat-history-insights_2.2.py` (download button on the start page). You don't need to open it.
+5. **Download the analysis file** `chat-history-insights.py` (download button on the start page). You don't need to open it.
 6. **Open a new chat in ChatGPT**, in the same account.
 7. **Drag the file in** and write: **"Create my AI usage report with the attached file."** Then send, without the conversations files for now.
 8. **ChatGPT asks how many conversations files you have.** Just type the number.
