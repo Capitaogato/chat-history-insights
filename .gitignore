@@ -1,0 +1,8 @@
+__pycache__/
+*.pyc
+.DS_Store
+# never commit real exports or reports
+conversations*.json
+*.zip
+ki-bericht.html
+rg_store/
